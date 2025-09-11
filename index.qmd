@@ -1,0 +1,30 @@
+---
+title: "About Me"
+---
+
+Hello, my name is Akashdeep Singh. I am currently a master's student at Baruch College 
+majoring in data science. Alongside this, I work at Zeus Financial as a Sales and 
+Trading Intern on the Mortgage Backed Securities desk.
+
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+if(!require("leaflet")){
+    options(repos=c(CRAN="https://cloud.r-project.org"))
+    install.packages("leaflet")
+    stopifnot(require("leaflet"))
+}
+
+baruch_longitude <- -73.98333
+baruch_latitude  <- +40.7402
+
+leaflet() |>
+  addTiles() |>
+  setView(baruch_longitude, baruch_latitude, zoom=17) |>
+  addPopups(baruch_longitude, baruch_latitude, 
+            "<b>Baruch College</b>!")
+```
