@@ -40,6 +40,7 @@ if(!file.exists(COUNTRY_TOP_10_FILENAME)){
 
 
 ```{r Get rid of NA}
+#| echo: true
 #import data- with clean values----
 #| echo: true
 if(!require("tidyverse")) install.packages("tidyverse")
@@ -58,6 +59,7 @@ COUNTRY_TOP_10 <- read_tsv(COUNTRY_TOP_10_FILENAME,na="N/A")
 While the values are now clean enough to work with, the columns and portrayal of values are still quite messy. To clean this up we run the following code.
 
 ```{r Clean data}
+#| echo: true
 #To do----
 library(stringr)
 library(DT)
@@ -69,6 +71,7 @@ format_titles <- function(df){
 
 
 ```{r Preview of Data}
+#| echo: true
 GLOBAL_TOP_10 |> 
     mutate(`runtime_(minutes)` = round(60 * runtime)) |>
     select(-runtime) |>
@@ -96,6 +99,7 @@ unique(is.na(COUNTRY_TOP_10$country_name))
 This data also tells us a story of the top performers of Netflix. By running the code we can see the non-English film that spent the longest time on the Top 10 list. 
 
 ```{r Top 10 Cumulative Non-English leader}
+#| echo: true
 GLOBAL_TOP_10|>
   filter(category== "Films (Non-English)") |>
   select(-season_title,-weekly_hours_viewed,-weekly_views,-weekly_rank,-runtime)|>
@@ -242,7 +246,6 @@ overarching success of this franchise is one that has been iconic through the ye
 
 ```{r Total View}
 #| echo: true
-#| eval: false
 library(scales)
 GLOBAL_TOP_10 |>
   filter(show_title == "Stranger Things") |>
@@ -256,6 +259,7 @@ GLOBAL_TOP_10 |>
 With almost 3 billion viewing hours and 19 weeks amongst the top 10 of Netflix shows globally, Stranger things has been a staple in this generations entertainment. 
 
 ```{r green}
+#| echo: true
 GLOBAL_TOP_10 |>
   filter(show_title == "Stranger Things") |>
   group_by(season_title) |>
@@ -270,6 +274,7 @@ GLOBAL_TOP_10 |>
 The success of this show is only expected to continue especially, off the back off a groundbreaking Stranger Things Season 4. 
 
 ```{r Worldwide appeal}
+#| echo: true
 # number of countries its present in
 COUNTRY_TOP_10 |>
   filter(show_title == "Stranger Things") |>
@@ -301,6 +306,7 @@ Be sure to check out the season premiere later this year!
 
 In the biggest population center of the world, Netflix has been thriving. India has been a growing economy and with that growth the access to widespread media has become even more available. This combined with the fact that Bollywood is a center of life for many Indians, Netflix has had an enourmous success in this market by tapping into the potential. 
 ```{r Indian market}
+#| echo: true
 india_hits<-COUNTRY_TOP_10 |>
   filter(country_iso2 == "IN") |>
   select(show_title, season_title, category, week,cumulative_weeks_in_top_10) |>
@@ -321,6 +327,7 @@ india_unique
 ```
 As seen from the code above India has been able to make its own hits through the years as well. The Indian market is able to churn out great viewership even in niche shows. 
 ```{r}
+#| echo: true
 GLOBAL_TOP_10 |>
   filter(show_title %in% india_unique$show_title) |>
   group_by(show_title, season_title, category) |>
@@ -345,6 +352,7 @@ The Possibilities seem to be endless with a country who seems to have the popula
 
 Spanish is the 4th largest language spoken in the world, and as such is not just limited to one part of the world. With so many countries speaking this language, the possibilities of Netflix in these markets and beyond has been the difference. 
 ```{r Spanish titles}
+#| echo: true
 spanish_titles <- c("Money Heist", "Elite", "Through My Window")
 
 GLOBAL_TOP_10 |>
@@ -362,6 +370,7 @@ GLOBAL_TOP_10 |>
 Shows like Elite and Money Heist have been top performers with the latter being a huge commercial success worldwide. The Spanish audience has been a huge contributer in this fact but shows like Money Heist have garnered even more international fame than inside the Spanish culture. 
 
 ```{r Money Heist Effect}
+#| echo: true
 
 #Pakistan
 COUNTRY_TOP_10 |>
