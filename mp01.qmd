@@ -1,0 +1,389 @@
+---
+title: "Mini-project-1"
+subtitle: "Netflix Data Analysis"
+author: "Akashdeep Singh"
+---
+
+Netflix's significance in everyday life has grown exponentially over the last 15 years. Especially since the lock down of Covid-19 in 2020. Not only in the fact of pop culture but also economically, Netflix is part of routines for so many different people. At the time this paper was published, October 3rd 2025, Netflix is the 19th largest company in the world, by market cap. That is astonishing! Amongst everyday giants giants such as MasterCard and Exxon, stands Netflix.
+
+It is not a stretch to say that, watching Netflix has become a staple in daily life, like buying groceries or filling up gas. A large part of this is due to the entertainment that the service has supplied to consumers of their content. From groundbreaking Netflix original series to classics we can re-watch, Netflix has tapped into daily lives in an industry defining way.
+
+The purpose of this paper is to both explore the performance of past series and the upcoming growth opportunities for Netflix going forward, while establishing an understanding of how that data was obtained. 
+
+### *Netflix Top 10 data*
+
+Netflix top 10 is an iconic section of the site, and as such, is a major gauge on performance of both shows and the countries these shows thrive in. Netflix's performance is no accident, rather a product of **"giving the people what they want"**
+
+This observation is best seen when looking at the countrywide data and global data of the Netflix top 10. **Running the code blocks below** downloads the data from Netflix top 10 data both, *globally* and broken down by *each country*, over approximately the last 4 years. The second code block also imports and formats the data to standard R form-accounting for "N/A" value that are not in standard R format. 
+
+```{r Download Data}
+#| echo: true
+#download data
+if(!dir.exists(file.path("data", "mp01"))){
+    dir.create(file.path("data", "mp01"), showWarnings=FALSE, recursive=TRUE)
+}
+
+GLOBAL_TOP_10_FILENAME <- file.path("data", "mp01", "global_top10_alltime.csv")
+
+if(!file.exists(GLOBAL_TOP_10_FILENAME)){
+    download.file("https://www.netflix.com/tudum/top10/data/all-weeks-global.tsv", 
+                  destfile=GLOBAL_TOP_10_FILENAME)
+}
+
+COUNTRY_TOP_10_FILENAME <- file.path("data", "mp01", "country_top10_alltime.csv")
+
+if(!file.exists(COUNTRY_TOP_10_FILENAME)){
+    download.file("https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", 
+                  destfile=COUNTRY_TOP_10_FILENAME)
+}
+```
+
+
+```{r Get rid of NA}
+#import data- with clean values----
+#| echo: true
+if(!require("tidyverse")) install.packages("tidyverse")
+library(readr)
+library(dplyr)
+#clean global values- one way of doing this 
+GLOBAL_TOP_10 <- read_tsv(GLOBAL_TOP_10_FILENAME)
+GLOBAL_TOP_10 <- GLOBAL_TOP_10 |>
+    mutate(season_title = if_else(season_title == "N/A", NA_character_, season_title))
+
+#clean country values-another way to import
+COUNTRY_TOP_10 <- read_tsv(COUNTRY_TOP_10_FILENAME,na="N/A")
+
+```
+
+While the values are now clean enough to work with, the columns and portrayal of values are still quite messy. To clean this up we run the following code.
+
+```{r Clean data}
+#To do----
+library(stringr)
+library(DT)
+format_titles <- function(df){
+    colnames(df) <- str_replace_all(colnames(df), "_", " ") |> str_to_title()
+    df
+}
+```
+
+
+```{r Preview of Data}
+GLOBAL_TOP_10 |> 
+    mutate(`runtime_(minutes)` = round(60 * runtime)) |>
+    select(-runtime) |>
+    format_titles() |>
+    head(n=20) |>
+    datatable(options=list(searching=FALSE, info=FALSE)) |>
+    formatRound(c('Weekly Hours Viewed', 'Weekly Views'))
+
+```
+
+This is much cleaner to look at.
+
+
+### Inital Data Analysis
+With the data cleaned and ready to use, finding information becomes simple. This becomes important when trying understanding the scope and reach that Netflix has over the world. Netflix is operated and watched in 94 countries per the data. 
+
+```{r Countries Showing netflix}
+#| echo: true
+# ----
+n_distinct(COUNTRY_TOP_10$country_name)
+# The last line of the code makes sure that we didn't miss any values
+unique(is.na(COUNTRY_TOP_10$country_name))
+```
+
+This data also tells us a story of the top performers of Netflix. By running the code we can see the non-English film that spent the longest time on the Top 10 list. 
+
+```{r Top 10 Cumulative Non-English leader}
+GLOBAL_TOP_10|>
+  filter(category== "Films (Non-English)") |>
+  select(-season_title,-weekly_hours_viewed,-weekly_views,-weekly_rank,-runtime)|>
+  slice_max(order_by = cumulative_weeks_in_top_10,n=5)|>
+  head(n=5)|>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+```
+
+When running this code we see that, All Quiet on the Western Front was the longest cumulative member of the Top 10 for non-English speaking films. The other outputs also are generated to make sure the data is consistent, but we also see Under Paris as the second place winner in this category. Interestingly both are European based languages. 
+
+Interesting facts like the length of a movie is also interesting to see. The below code, finds this for us in seconds.
+
+```{r Longest Film}
+#| echo: true
+GLOBAL_TOP_10 |>
+  filter(category %in% c("Films (English)", "Films (Non-English)")) |>
+  slice_max(order_by = runtime, n = 5)|>
+  select(week,category,show_title,runtime)|>
+  head(n=5)|>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+```
+When looking at this output, we see that Pushpa 2 is the longest film in the top 10, and Animal is second. Both being Hindi movies is an interesting trend to keep in mind when potentially looking at Bollywood films. 
+
+Scaffolding on the idea of view time it can be important to understand what shows and movies have generated the most view time overall. The following code examines this question.
+
+```{r Max View time overall for each category}
+#| echo: true
+library(scales)
+GLOBAL_TOP_10 |>
+  group_by(category, show_title) |>
+  summarise(total_hours = sum(weekly_hours_viewed, na.rm = TRUE), .groups = "drop") |>
+  group_by(category) |>
+  slice_max(order_by = total_hours, n = 1) |>
+  ungroup()|>
+  mutate(total_hours = comma(total_hours))|>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+
+```
+
+After looking at the output we can see that each leader in total view time is a Netflix original except KPop Demon Hunters. 
+
+This fact is interesting because it is interesting how 2 out of the total 4 categories, are lead by Korean based entertainment. When looking at the global reach of culture through Netflix, sometimes it's easier to understand trends while looking at the country level. As most countries have their own set of values/appetite when it comes to entertainment. 
+
+A good question to answer is, what show performed the best, in a specific region?
+```{r Longest run in a Country top 10}
+#| echo: true
+COUNTRY_TOP_10 |>
+  filter(category=="TV") |>
+  slice_max(cumulative_weeks_in_top_10,n=1)|>
+  select(country_name,category,show_title,cumulative_weeks_in_top_10) |>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+```
+
+We see that the, originally Spanish show, Money Heist performed very well in the Pakistani Market. So much so that the show stayed in the top 10 over 2 years. This is a great piece of information to know because with a show in the top 10 for that long the show must have a huge following. 
+
+Netflix is seen as a way to spread culture. The country data tends to show a blip in the count of the total observations.
+
+```{r Missing Data?}
+#| echo: true
+COUNTRY_TOP_10 |>
+  group_by(country_iso2) |>
+  summarise(weeks = n_distinct(week), .groups = "drop") |>
+  filter(weeks < max(weeks))|>
+    datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+
+```
+Amongst further investigation it is seen that Russia only had 35 weeks of coverage with Netflix. This is primarily due to the fact of the stoppage in service to Russia during the onset of the Ukrainian invasion. 
+
+
+```{r Red Notice }
+#| echo: true
+GLOBAL_TOP_10 |>
+  filter(show_title == "Red Notice",
+         lubridate::year(week) == 2021) |>
+  summarise(
+    total_hours = sum(weekly_hours_viewed, na.rm = TRUE),
+    runtime_hours = 118 / 60,
+    approx_views = total_hours / runtime_hours
+  )|>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+
+
+```
+Red Notice was an especially big blockbuster and with the above code we see that it was watched ~ 400 million hours in just 2021. The code above shows this.
+
+
+Movies like Red Notice were destined blockbusters from the time they came out. But other films took time to get started, especially in the US. The code below shows countries that reached Number 1 in the US but did not originally debut there.
+```{r Top Climbers}
+#| echo: true
+films_that_climbed <- COUNTRY_TOP_10 |>
+  filter(country_iso2 == "US",
+         category == "Films") |>
+  group_by(show_title) |>
+  reframe(
+    debut_week   = min(week, na.rm = TRUE),
+    debut_rank   = weekly_rank[which.min(week)],
+    topped       = any(weekly_rank == 1, na.rm = TRUE),
+    last_week_at_1 = suppressWarnings(max(week[weekly_rank == 1], na.rm = TRUE))
+  ) |>
+  filter(debut_rank > 1 & topped)
+
+# how many 
+nrow(films_that_climbed)
+
+# most recent 
+films_that_climbed |>
+  slice_max(order_by = last_week_at_1, n = 1)|>
+    datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+```
+45 Films have been able to pull off this impressive feat, but the rise of KPop Demon Hunters most recently has been on a tear recently. 
+
+Speaking of hits, finding the best debut performing show would be great information as well. The highest performer can be though of as the show that made the most concurrent debuts in the top 10 , for the most countries, in its first week. 
+
+```{r Highest Debuts}
+#| echo: true
+COUNTRY_TOP_10 |>
+  filter(category=="TV") |>
+  group_by(show_title, season_title) |>
+  summarise(debut_week = min(week, na.rm = TRUE), .groups = "drop") |>
+  left_join(COUNTRY_TOP_10, by = c("show_title", "season_title", "debut_week" = "week")) |>
+  group_by(show_title, season_title, debut_week) |>
+  summarise(countries = n_distinct(country_iso2), .groups = "drop") |>
+  slice_max(order_by = countries, n = 1) |>
+    datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+
+```
+
+Running the code we see that Emily in Paris Season 2, is the most popular show to debut in the top 10 at its time of release. Especially interesting to see this during the height of the Covid-19 pandemic.
+
+
+
+### Upcoming Season of Stranger Things
+
+Netflix will be releasing the fifth and final season of Stranger things at the end of 2025! The 
+overarching success of this franchise is one that has been iconic through the years. 
+
+```{r Total View}
+#| echo: true
+#| eval: false
+library(scales)
+GLOBAL_TOP_10 |>
+  filter(show_title == "Stranger Things") |>
+  summarise(
+    total_hours = sum(weekly_hours_viewed, na.rm = TRUE),
+    total_weeks = max(cumulative_weeks_in_top_10, na.rm = TRUE)
+  )|>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+```
+With almost 3 billion viewing hours and 19 weeks amongst the top 10 of Netflix shows globally, Stranger things has been a staple in this generations entertainment. 
+
+```{r green}
+GLOBAL_TOP_10 |>
+  filter(show_title == "Stranger Things") |>
+  group_by(season_title) |>
+  summarise(
+    weeks_in_top10 = max(cumulative_weeks_in_top_10, na.rm = TRUE),
+    total_hours = sum(weekly_hours_viewed, na.rm = TRUE),
+    .groups = "drop"
+  )|> 
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+```
+The success of this show is only expected to continue especially, off the back off a groundbreaking Stranger Things Season 4. 
+
+```{r Worldwide appeal}
+# number of countries its present in
+COUNTRY_TOP_10 |>
+  filter(show_title == "Stranger Things") |>
+  summarise(num_countries = n_distinct(country_iso2))
+
+# Comparison to other hits
+GLOBAL_TOP_10 |>
+  filter(show_title %in% c("Stranger Things", "Wednesday", "Bridgerton"),
+         category == "TV (English)") |>
+  group_by(show_title) |>
+  summarise(
+    total_hours = sum(weekly_hours_viewed, na.rm = TRUE),
+    max_weeks = max(cumulative_weeks_in_top_10, na.rm = TRUE),
+    .groups = "drop"
+  )|>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+
+
+
+
+```
+
+Not only is Stranger Things a worldwide phenomena in 93/94 countries, its an astonishingly strong performer with numbers comparable to both hits Wednesday and Bridgerton. 
+
+Be sure to check out the season premiere later this year!
+
+### Commercial Success in India
+
+In the biggest population center of the world, Netflix has been thriving. India has been a growing economy and with that growth the access to widespread media has become even more available. This combined with the fact that Bollywood is a center of life for many Indians, Netflix has had an enourmous success in this market by tapping into the potential. 
+```{r Indian market}
+india_hits<-COUNTRY_TOP_10 |>
+  filter(country_iso2 == "IN") |>
+  select(show_title, season_title, category, week,cumulative_weeks_in_top_10) |>
+  group_by(show_title, season_title, category) |>
+  summarise(LIKED_SHOWS = sum(cumulative_weeks_in_top_10, na.rm = TRUE),
+            weeks_in_top10 = n_distinct(week),
+            .groups = "drop") |>
+  arrange(desc(LIKED_SHOWS))
+
+us_HITS<-COUNTRY_TOP_10 |>
+  filter(country_iso2 == "US") |>
+  distinct(show_title)
+
+india_unique<-india_hits |>
+  filter(!(show_title %in% us_HITS$show_title)) |>
+  slice_head(n = 5)
+india_unique
+```
+As seen from the code above India has been able to make its own hits through the years as well. The Indian market is able to churn out great viewership even in niche shows. 
+```{r}
+GLOBAL_TOP_10 |>
+  filter(show_title %in% india_unique$show_title) |>
+  group_by(show_title, season_title, category) |>
+  summarise(
+    total_hours_global = sum(weekly_hours_viewed, na.rm = TRUE),
+    weeks_in_top10 = max(cumulative_weeks_in_top_10, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  select(show_title,category,total_hours_global) |>
+  arrange(desc(total_hours_global)) |>
+  slice_head(n = 5) |>
+    datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+  
+```
+From the above code we can see that India has been able to not only do this feat with TV shows, but rather with movies as well. Symbolizing that the success in India is leading to potentially a bigger and more diverse market than ever. 
+
+The Possibilities seem to be endless with a country who seems to have the population to keep up with the supply. 
+
+
+### Spanish Titles have made the difference
+
+Spanish is the 4th largest language spoken in the world, and as such is not just limited to one part of the world. With so many countries speaking this language, the possibilities of Netflix in these markets and beyond has been the difference. 
+```{r Spanish titles}
+spanish_titles <- c("Money Heist", "Elite", "Through My Window")
+
+GLOBAL_TOP_10 |>
+  filter(show_title %in% spanish_titles) |>
+  group_by(show_title) |>
+  summarise(
+    total_hours = sum(weekly_hours_viewed, na.rm = TRUE),
+    max_weeks = max(cumulative_weeks_in_top_10, na.rm = TRUE),
+    .groups = "drop"
+  )|>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+  
+```
+Shows like Elite and Money Heist have been top performers with the latter being a huge commercial success worldwide. The Spanish audience has been a huge contributer in this fact but shows like Money Heist have garnered even more international fame than inside the Spanish culture. 
+
+```{r Money Heist Effect}
+
+#Pakistan
+COUNTRY_TOP_10 |>
+  filter(category=="TV") |>
+  slice_max(cumulative_weeks_in_top_10,n=1)|>
+  select(country_name,category,show_title,cumulative_weeks_in_top_10) |>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+
+#India
+COUNTRY_TOP_10 |>
+  filter(country_iso2 == "IN") |>
+  select(show_title, season_title, category, week,cumulative_weeks_in_top_10) |>
+  group_by(show_title, season_title, category) |>
+  summarise(LIKED_SHOWS = sum(cumulative_weeks_in_top_10, na.rm = TRUE),
+            weeks_in_top10 = n_distinct(week),
+            .groups = "drop") |>
+  arrange(desc(LIKED_SHOWS))|>
+   slice_head(n = 5)|>
+  datatable(options=list(searching=FALSE, 
+                           info=FALSE))
+
+```
+
+As seen from the code above the Indian and Pakistani populations both love Money Heist and have the show deeply entrenched in pop-culture for them. With almost a quarter of the population loving the show, its fair to say that Spanish shows, namely Money Heist, has made the difference. 
