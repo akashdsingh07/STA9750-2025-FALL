@@ -392,7 +392,6 @@ COUNTRY_TOP_10 |>
    slice_head(n = 5)|>
   datatable(options=list(searching=FALSE, 
                            info=FALSE))
-
 ```
 
 As seen from the code above the Indian and Pakistani populations both love Money Heist and have the show deeply entrenched in pop-culture for them. With almost a quarter of the population loving the show, its fair to say that Spanish shows, namely Money Heist, has made the difference. 
