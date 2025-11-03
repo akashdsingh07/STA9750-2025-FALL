@@ -15,6 +15,7 @@ Housing is one of the most hotly debated topics in the US if not the world at th
 In this project we specifically look at what makes a city "YIMBY"-Yes in my backyard. This is the opposite of "NIMBY" which refers to a movement of people who do not approve of the increase of housing due to the negative effect on their property values.
 
 Simple economics tells us that as supply increases demand decreases. But housing is more complex than those simple models. As cities increase their size are they running into a wall of growth? Are cities that are "YIMBY" better to live in financially? 
+
 ## Task 1-Data initilization
 
 ```{r American Community Survey (ACS) data}
