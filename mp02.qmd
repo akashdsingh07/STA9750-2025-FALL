@@ -2,7 +2,7 @@
 title: "Making Backyards Affordable for All"
 subtitle: "Lets get YIMBY"
 author: "Akashdeep Singh"
-editor: visual
+editor: source
 format: 
   html: 
     theme: "flatly" 
