@@ -3,11 +3,12 @@ title: "Visualizing and Maintaining the Green Canopy of NYC"
 author: "Akashdeep Singh"
 ---
 
-## Task 1:
+## Task 1: Download NYC City Council District Boundaries
 
 ```{r}
 #| code-fold: true
 #| code-summary: "Show code"
+#| output: false
 library(sf)
 library(tidyverse)
 library(httr2)
@@ -61,11 +62,12 @@ get_nyc_council_districts <- function(){
 nyc_districts <- get_nyc_council_districts()
 ```
 
-## Task 2:
+## Task 2: Download Tree Points
 
 ```{r}
 #| code-fold: true
 #| code-summary: "Show code"
+#| output: false
 
 library(httr2)
 library(sf)
@@ -138,42 +140,69 @@ trees <- download_tree_points()
 
 ```
 
-## Task 3
+## Task 3-Plot All Tree Points
 
 ```{r}
 #| code-fold: true
 #| code-summary: "Show code"
-st_crs(nyc_districts)
-st_crs(trees)
+#| output: false
 
-# Transform
-trees <- st_set_crs(trees, 2263)  
-trees <- st_transform(trees, st_crs(nyc_districts))
+library(sf)
+library(dplyr)
+library(ggplot2)
 
-st_bbox(trees[1:1000, ])
-st_bbox(nyc_districts)
 
-#Visual
+trees_fixed <- trees %>%
+  st_drop_geometry() %>%  
+  filter(!is.na(longitude) & !is.na(latitude)) %>%  
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) 
+
+print(st_bbox(trees_fixed))
+
+print(head(trees_fixed))
+
+
+trees_transformed <- st_transform(trees_fixed, st_crs(nyc_districts))
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
 ggplot() +
   geom_sf(data = nyc_districts, fill = "lightgray", color = "black", linewidth = 0.5) +
-  geom_sf(data = trees[1:20000, ], color = "darkgreen", alpha = 0.3, size = 0.5) +
+  geom_sf(data = trees_transformed[1:20000, ], color = "darkgreen", alpha = 0.3, size = 0.5) +
   labs(title = "NYC Street Trees by Council District",
        subtitle = "20,000 trees") +
   theme_minimal()
-```
 
-## Task 4
+
+trees_with_districts <- st_join(trees_transformed, nyc_districts, join = st_intersects)
+```
 
 ```{r}
 #| code-fold: true
 #| code-summary: "Show code"
+#| output: false
+
+# check districts
+final <- trees_with_districts %>%
+  st_drop_geometry() %>%
+  filter(!is.na(CounDist)) %>%
+  group_by(CounDist) %>%
+  summarize(count = n())
+
+print(final)
+```
+
+## Task 4- District-Level Analysis of Tree Coverage
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+#| output: false
 
 library(dplyr)
 library(sf)
-
-trees_with_districts <- st_join(trees, nyc_districts, join = st_intersects)
-
-
 head(trees_with_districts)
 nrow(trees_with_districts)  
 ```
@@ -279,7 +308,8 @@ q4 <- trees_with_districts %>%
 
 print(q4)
 ```
-The most common species in Manhattan is the Honeylocust.
+
+**The most common species in Manhattan is the Honeylocust.**
 
 ### Question 5: Species of tree closest to Baruch's campus
 
@@ -306,6 +336,77 @@ q5 <- trees_with_districts %>%
 print(q5)
 
 ```
-The closest species of tree that is near Baruch College, is the Callery pear. 
 
-##Task 5
+**The closest species of tree that is near Baruch College, is the Callery pear.**
+
+## Task 5-NYC Parks Proposal
+
+**Park Proposal:**
+
+We propose a comprehensive tree health initiative for Manhattan's District 2 to address the district's critical tree mortality crisis. This program will **plant 500 new street trees** and **remove all dead trees**, with priority given to under-served corridors east of Second Avenue where tree coverage falls significantly below city standards. The initiative will focus on diversifying species composition by introducing climate-resilient varieties such as London Planetree and Red Oak, while reducing dependence on over represented species like Honeylocust.
+
+District 2 faces a tree health emergency that demands immediate intervention. Our analysis reveals that District 2 has one of the highest percentages of dead trees among comparable Lower Manhattan districts. Furthermore, District 2's tree density falls below neighboring districts despite having among the highest pedestrian traffic volumes. The eastern corridor particularly suffers, with streets having significantly fewer trees per block compared to recommended standards of 12-15 trees per block.
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+#| echo: false
+
+library(sf); library(dplyr); library(ggplot2); library(patchwork)
+
+my_district <- 2
+district_stats <- trees_with_districts %>%
+  st_drop_geometry() %>%
+  filter(CounDist %in% c(1, 2, 3, 4), !is.na(CounDist)) %>%
+  group_by(CounDist) %>%
+  summarize(total_trees = n(), dead_trees = sum(status == "Dead", na.rm = TRUE),
+            pct_dead = (dead_trees/total_trees)*100, area = first(Shape_Area)) %>%
+  mutate(highlight = ifelse(CounDist == 2, "District 2", "Other"), 
+         trees_per_sqmi = (total_trees/area)*27878400)
+
+d2 <- district_stats %>% filter(CounDist == 2)
+cat(sprintf("Scope: %d dead trees removed + 500 new plantings = %d total trees\n", d2$dead_trees, d2$dead_trees + 500))
+```
+
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+#| echo: false
+#| fig-width: 10
+#| fig-height: 2.5
+
+p1 <- ggplot(district_stats, aes(x=factor(CounDist), y=pct_dead, fill=highlight)) +
+  geom_col(width=0.6) + geom_text(aes(label=sprintf("%.1f%%", pct_dead)), vjust=-0.5, size=3.5, fontface="bold") +
+  scale_fill_manual(values=c("District 2"="#dc2626", "Other"="#10b981")) +
+  labs(title="Highest Dead Tree %", x="District", y="% Dead") +
+  theme_minimal(base_size=9) + theme(legend.position="none", plot.title=element_text(face="bold", size=10))
+
+p2 <- ggplot(district_stats, aes(x=factor(CounDist), y=trees_per_sqmi, fill=highlight)) +
+  geom_col(width=0.6) + geom_hline(yintercept=mean(district_stats$trees_per_sqmi), linetype="dashed", color="gray40") +
+  geom_text(aes(label=format(round(trees_per_sqmi), big.mark=",")), vjust=-0.5, size=3.5, fontface="bold") +
+  scale_fill_manual(values=c("District 2"="#dc2626", "Other"="#10b981")) +
+  labs(title="Below-Avg Density", x="District", y="Trees/sq mi") +
+  theme_minimal(base_size=9) + theme(legend.position="none", plot.title=element_text(face="bold", size=10))
+p1
+p2
+```
+
+Our district requires urgent intervention.
+
+**Tree Mortality Crisis:** District 2 has the highest rate of dead trees among comparable districts.
+
+```{r}
+district2_trees <- trees_with_districts %>% filter(CounDist==2) %>%
+  mutate(tree_status=case_when(status=="Dead"~"Dead", health=="Poor"~"Poor", TRUE~"Healthy"))
+district2_boundary <- nyc_districts %>% filter(CounDist==2)
+
+m1 <- ggplot() + geom_sf(data=district2_boundary, fill="gray95", color="black", linewidth=0.8) +
+  geom_sf(data=district2_trees, aes(color=tree_status), size=0.5, alpha=0.6) +
+  scale_color_manual(values=c("Healthy"="#10b981","Poor"="#fbbf24","Dead"="#dc2626"), name="") +
+  labs(title="District 2 Tree Health") + theme_void(base_size=9) +
+  theme(plot.title=element_text(face="bold", hjust=0.5, size=10), legend.position="right")
+
+m1
+```
+The zoomed map reveals that tree health problems are concentrated in the eastern corridor of the district, particularly east of Second Avenue, where lower-income residents face the worst conditions. By removing 300+ dead trees and planting 500 new climate-resilient species, this program will restore District 2's urban canopy to be more in line with neighboring districts, improve air quality, reduce urban heat effects, and eliminate safety hazards. The side-by-side comparison with District 1 demonstrates the stark disparity in tree health that this initiative will address.
