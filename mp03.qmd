@@ -1,0 +1,311 @@
+---
+title: "Visualizing and Maintaining the Green Canopy of NYC"
+author: "Akashdeep Singh"
+---
+
+## Task 1:
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+library(sf)
+library(tidyverse)
+library(httr2)
+
+get_nyc_council_districts <- function(){
+    # URL for NYC City Council District Boundaries
+    url <- "https://s-media.nyc.gov/agencies/dcp/assets/files/zip/data-tools/bytes/city-council/nycc_25c.zip"
+    
+    # Step 1: Create data/mp03 directory if needed
+    if(!dir.exists(file.path("data", "mp03"))){
+        dir.create(file.path("data", "mp03"), showWarnings=FALSE, recursive=TRUE)
+    }
+    
+    # Define file paths
+    zip_file <- file.path("data", "mp03", "nycc_25c.zip")
+    extract_dir <- file.path("data", "mp03")
+    
+    # Step 2: Download zip file only if needed
+    if(!file.exists(zip_file)){
+        message("Downloading NYC City Council District boundaries...")
+        download.file(url, zip_file, mode="wb")
+    }
+    
+    # Step 3: Unzip only if needed
+    # List files in zip to find the .shp file
+    zip_contents <- unzip(zip_file, list=TRUE)
+    shp_files <- zip_contents$Name[grepl("\\.shp$", zip_contents$Name)]
+    
+    if(length(shp_files) == 0){
+        stop("No .shp file found in the zip archive")
+    }
+    
+    shp_file <- file.path("data", "mp03", shp_files[1])
+    
+    if(!file.exists(shp_file)){
+        message("Unzipping district boundaries...")
+        unzip(zip_file, exdir=extract_dir)
+    }
+    
+    # Step 4: Read the shapefile
+    districts <-st_read(shp_file, quiet=TRUE)
+    
+    # Step 5: Transform to WGS 84
+    districts_wgs84 <-st_transform(districts, crs="WGS84")
+    
+    # Step 6: Return the transformed data
+    return(districts_wgs84)
+}
+
+# Usage:
+nyc_districts <- get_nyc_council_districts()
+```
+
+## Task 2:
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+
+library(httr2)
+library(sf)
+library(dplyr)
+library(glue)
+
+download_tree_points <- function(
+    base_url = "https://data.cityofnewyork.us/resource/hn5i-inap.json",
+    limit = 5000,
+    out_dir = "data/mp03"
+) {
+    if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
+
+    offset <- 0
+    chunk_id <- 1
+    downloaded_files <- c()
+
+    repeat {
+        out_file <- file.path(out_dir, glue("trees_{sprintf('%03d', chunk_id)}.geojson"))
+
+        if (!file.exists(out_file)) {
+            cat(glue("Downloading chunk {chunk_id} (offset = {offset})...\n"))
+
+            req <- request(base_url) |>
+                req_url_query(
+                    `$limit`  = limit,
+                    `$offset` = offset
+                )
+
+            resp <- req_perform(req)
+            resp_body_raw(resp) |> writeBin(con = out_file)
+
+        } else {
+            cat(glue("Chunk {chunk_id} already exists — skipping.\n"))
+        }
+
+        dat <- tryCatch(
+            st_read(out_file, quiet = TRUE),
+            error = function(e) NULL
+        )
+
+        if (is.null(dat) || nrow(dat) == 0) {
+            cat("No more data returned — stopping download.\n")
+            break
+        }
+
+        downloaded_files <- c(downloaded_files, out_file)
+
+        if (nrow(dat) < limit) {
+            cat("Final chunk downloaded — reached end of dataset.\n")
+            break
+        }
+
+        offset <- offset + limit
+        chunk_id <- chunk_id + 1
+    }
+
+    # combine all files
+    all_files <- list.files(out_dir, pattern = "trees_\\d+\\.geojson", full.names = TRUE)
+
+    cat("Reading all GeoJSON files...\n")
+    tree_data <- bind_rows(lapply(all_files, st_read, quiet = TRUE))
+
+    cat(glue("✔ Finished — total rows: {nrow(tree_data)}\n"))
+
+    return(tree_data)
+}
+
+trees <- download_tree_points()
+
+```
+
+## Task 3
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+st_crs(nyc_districts)
+st_crs(trees)
+
+# Transform
+trees <- st_set_crs(trees, 2263)  
+trees <- st_transform(trees, st_crs(nyc_districts))
+
+st_bbox(trees[1:1000, ])
+st_bbox(nyc_districts)
+
+#Visual
+ggplot() +
+  geom_sf(data = nyc_districts, fill = "lightgray", color = "black", linewidth = 0.5) +
+  geom_sf(data = trees[1:20000, ], color = "darkgreen", alpha = 0.3, size = 0.5) +
+  labs(title = "NYC Street Trees by Council District",
+       subtitle = "20,000 trees") +
+  theme_minimal()
+```
+
+## Task 4
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+
+library(dplyr)
+library(sf)
+
+trees_with_districts <- st_join(trees, nyc_districts, join = st_intersects)
+
+
+head(trees_with_districts)
+nrow(trees_with_districts)  
+```
+
+### Question 1: Which council district has the most trees?
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+
+q1 <- trees_with_districts %>%
+  st_drop_geometry() %>%
+  group_by(CounDist) %>%
+  summarize(tree_count = n()) %>%
+  arrange(desc(tree_count)) %>%
+  slice(1) %>%
+  left_join(
+    trees_with_districts %>% 
+      st_drop_geometry() %>% 
+      select(CounDist, zip_city) %>% 
+      distinct(),
+    by = "CounDist"
+  )
+
+print(q1)
+```
+
+**The District with the most trees is the 51st district, which is located in Staten Island. this makes sense as Staten Island is often considered the most suburban borough**
+
+### Question 2: Which district has highest density of trees?
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+q2 <- trees_with_districts %>%
+  st_drop_geometry() %>%
+  group_by(CounDist, Shape_Area) %>%
+  summarize(tree_count = n(), .groups = "drop") %>%
+  mutate(tree_density = tree_count / Shape_Area) %>%
+  arrange(desc(tree_density)) %>%
+  slice(1) %>%
+  left_join(
+    trees_with_districts %>% 
+      st_drop_geometry() %>% 
+      select(CounDist, zip_city) %>% 
+      distinct(),
+    by = "CounDist"
+  )
+print(q2)
+```
+
+**The district with the highest density count is district 9, in Manhattan. This is very interesting because Manhattan would seem to be the last place the highest density of trees would be in.**
+
+### Question 3: Which district has highest fraction of dead trees?
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code"
+q3 <- trees_with_districts %>%
+  st_drop_geometry() %>%
+  group_by(CounDist) %>%
+  summarize(
+    total_trees = n(),
+    dead_trees = sum(status == "Dead", na.rm = TRUE),
+    fraction_dead = dead_trees / total_trees
+  ) %>%
+  arrange(desc(fraction_dead)) %>%
+  slice(1) %>%
+  left_join(
+    trees_with_districts %>% 
+      st_drop_geometry() %>% 
+      select(CounDist, zip_city) %>% 
+      distinct(),
+    by = "CounDist"
+  )
+
+
+print(q3)
+```
+
+**The most dead trees are located in the Bronx in district 16.**
+
+### Question 4: Most common tree species in Manhattan
+
+```{r}
+trees_with_districts <- trees_with_districts %>%
+  mutate(borough = case_when(
+    CounDist >= 1 & CounDist <= 10 ~ "Manhattan",
+    CounDist >= 11 & CounDist <= 18 ~ "Bronx",
+    CounDist >= 19 & CounDist <= 32 ~ "Queens",
+    CounDist >= 33 & CounDist <= 48 ~ "Brooklyn",
+    CounDist >= 49 & CounDist <= 51 ~ "Staten Island",
+    TRUE ~ NA_character_
+  ))
+
+q4 <- trees_with_districts %>%
+  st_drop_geometry() %>%
+  filter(borough == "Manhattan") %>%
+  group_by(spc_common) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>%
+  slice(1)
+
+print(q4)
+```
+The most common species in Manhattan is the Honeylocust.
+
+### Question 5: Species of tree closest to Baruch's campus
+
+```{r}
+
+# Baruch coordinates: 40.7402 N, 73.9834 W
+
+
+new_st_point <- function(lat, lon, ...){
+  st_sfc(st_point(c(lon, lat))) |>
+    st_set_crs("WGS84")
+}
+
+baruch_point <- new_st_point(40.7402, -73.9834)
+
+baruch_point <- st_transform(baruch_point, st_crs(trees_with_districts))
+
+q5 <- trees_with_districts %>%
+  mutate(distance = st_distance(geometry, baruch_point)) %>%
+  arrange(distance) %>%
+  slice(1) %>%
+  select(spc_common, distance, address)
+
+print(q5)
+
+```
+The closest species of tree that is near Baruch College, is the Callery pear. 
+
+##Task 5
