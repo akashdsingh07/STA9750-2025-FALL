@@ -1,0 +1,531 @@
+---
+title: "Individual Report STA 9750"
+author: Akashdeep Singh
+---
+
+## Overarching Question
+
+The overarching question to answer is whether or not player projections are accurate represntations of actual performance. This question is attempted to be answered through 2 major specific questions.
+
+### Specific Questions
+
+1.  Is there positional difference in projections vs performance. Meaning, are different skill positions more like to out perform or under perform projections.
+
+2.  Is the amount of volume a player receives consistent with performance, do higher volume players actually perform better?
+
+## Data Initialization
+
+### Import Data
+
+To answer these questions we retrieved data using a package called `nflreadr`. This package houses all player statistics from the past seasons of the NFL. For our analysis we aim to use the 2024 data to reach our conclusions. The following code will download all integral libraries to import the data, as well as import future required packages that will be used during the project.
+
+```{r Load Libraries}
+#| output: FALSE
+#| code-fold: TRUE
+#| code-summary: "Load Libraries"
+if (!requireNamespace("nflreadr", quietly = TRUE)) install.packages("nflreadr")
+library(nflreadr)
+
+if (!requireNamespace("gtrendsR", quietly = TRUE)) install.packages("gtrendsR")
+library(gtrendsR)
+
+if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
+library(dplyr)
+
+if (!requireNamespace("rvest", quietly = TRUE)) install.packages("rvest")
+library(rvest)
+
+if (!requireNamespace("purrr", quietly = TRUE)) install.packages("purrr")
+library(purrr)
+
+if (!requireNamespace("stringr", quietly = TRUE)) install.packages("stringr")
+library(stringr)
+
+if (!requireNamespace("tidyr", quietly = TRUE)) install.packages("tidyr")
+library(tidyr)
+
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+library(ggplot2)
+
+if (!requireNamespace("DT", quietly = TRUE)) install.packages("DT")
+library(DT)
+
+```
+
+### Inital EDA
+
+After importing the libraries we move to actually reading the data from the `nflreadr`. The data we aim to import is the 2024 weekly data of all players.
+
+```{r Import Inital Data}
+#| output: FALSE
+#| code-fold: TRUE
+#| code-summary: "Import Inital Data"
+#| warning: false
+#| message: false
+# Load all data for the 2024 NFL season
+
+Fantasy_total<-load_player_stats(season=2024)
+
+
+#Test on QB
+
+Fantasy_QB_2024<-Fantasy_total%>%
+  filter(position=="QB")%>%
+  select(player_id,player_display_name,team,opponent_team,position,
+         passing_yards,passing_tds,passing_interceptions,rushing_fumbles_lost,
+         sack_fumbles_lost,week,rushing_2pt_conversions,passing_2pt_conversions,
+         rushing_yards,rushing_tds,receiving_yards,receiving_tds,targets,
+         receptions,fantasy_points,week,attempts) %>% 
+  mutate(half_PPR_fantasy_points=fantasy_points+.5*receptions)
+
+# Rest of positions
+
+Fantasy_RB_2024<-Fantasy_total %>% 
+  filter(position=="RB") %>% 
+  select(player_id,player_display_name,team,opponent_team,position,
+         passing_yards,passing_tds,passing_interceptions,receiving_fumbles_lost,rushing_fumbles_lost,week,rushing_2pt_conversions,passing_2pt_conversions,receiving_2pt_conversions,
+         rushing_yards,rushing_tds,receiving_yards,receiving_tds,targets,
+         receptions,fantasy_points,carries) %>% 
+  mutate(fantasy_HPPR=fantasy_points+receptions*.5)
+  
+Fantasy_WR_2024<-Fantasy_total %>% 
+  filter(position=="WR") %>% 
+  select(player_id,player_display_name,team,opponent_team,position,
+         passing_yards,passing_tds,passing_interceptions,receiving_fumbles_lost,rushing_fumbles_lost,week,rushing_2pt_conversions,passing_2pt_conversions,receiving_2pt_conversions,
+         rushing_yards,rushing_tds,receiving_yards,receiving_tds,targets,
+         receptions,fantasy_points) %>% 
+  mutate(fantasy_HPPR=fantasy_points+receptions*.5)
+  
+Fantasy_TE_2024<-Fantasy_total %>% 
+  filter(position=="TE") %>% 
+  select(player_id,player_display_name,team,opponent_team,position,
+         passing_yards,passing_tds,passing_interceptions,receiving_fumbles_lost,rushing_fumbles_lost,week,rushing_2pt_conversions,passing_2pt_conversions,receiving_2pt_conversions,
+         rushing_yards,rushing_tds,receiving_yards,receiving_tds,targets,
+         receptions,fantasy_points) %>% 
+  mutate(fantasy_HPPR=fantasy_points+receptions*.5)
+  
+Fantasy_Skill_positions<-Fantasy_QB_2024 %>% 
+  full_join(Fantasy_RB_2024) %>% 
+  full_join(Fantasy_WR_2024) %>% 
+  full_join(Fantasy_TE_2024)
+
+all_players_2024<-unique(Fantasy_total$player_display_name)
+all_players_2024<-as_tibble(all_players_2024)
+```
+
+As we can see in this code chunk, we have a large dataset of all players initally. Especially when we look at the inital Fantasy_total dataset. This inital import included all player data, ranging from individual defensive players to kickers to punter, and skill positions. To simplify this analysis and stream line the importance, we focus on the performance of the skill positions. Thus we aim to extract the wide receiver, quarterback, runnning back, and tight end data. Lastly we join the data together so we have a central data source.
+
+Moving forward our data also included many variables that are not needed, and that seem a bit redundant. Thus as a baseline we select the most influential base statistics. I.e Yardage accumulation( passing, rushing, receiving), volume(attempts,targets,carries), and TDs, to name a few.
+
+A great piece about this data set is that they aggregate the data to also calculate fantasy performance by the week. This saves time in manually calculating the statistics but it is important that we aim to analyze half-PPR data. Half PPR is half points per reception. The data we have pulled only calculated statistics without putting that half a point premium on receptions. As such we also added this column while importing and cleaning the data.
+
+After running this initial chunk, we have all weekly skill position player performance data for the 2024 season.
+
+### Scraping data
+
+However the main point was to compare this data to the projections, and for this we must pull projections data for the 2024 season. I did this by creating a function to scrape static HTMLs on the Fantasy Pro website. They housed all of their data behind pay walls,and log ins, however they do not require this for direct links to previous HTMLs. As such, by a "happy accident" as Bob Ross would say, I stumbled upon one of these pages in a guided search.The following code chunk was used to pull all player data, from these static HTMLs.
+
+```{r Scrape NFL projections}
+#| output: false
+#| message: false
+
+# Function to Scrape                  ####
+scrape_fp <- function(position, week, year = 2024) {
+  
+  url <- sprintf(
+    "https://www.fantasypros.com/nfl/projections/%s.php?week=%s&year=%s&scoring=HALF",
+    position, week, year
+  )
+  
+  cat("Scraping:", position, "Week", week, "\n")
+  
+  pg <- tryCatch(read_html(url), error = function(e) NULL)
+  if (is.null(pg)) return(NULL)
+  
+  
+  rows <- pg %>% html_elements("table#data tbody tr")
+  if (length(rows) == 0) return(NULL)
+  
+  
+  names <- rows %>%
+    html_element(".player-label") %>%
+    html_text(trim = TRUE)
+  
+  
+  stats_list <- rows %>%
+    map(~ .x %>% 
+          html_elements("td.center") %>% 
+          html_text(trim = TRUE))
+  
+  # Convert to dataframe
+  max_cols <- max(lengths(stats_list))
+  
+  stats_df <- stats_list %>%
+    map(~ { length(.) <- max_cols; . }) %>%   # rows to equal length
+    do.call(what = rbind) %>%
+    as.data.frame(stringsAsFactors = FALSE)
+  
+  # Convert numeric vals
+  stats_df <- stats_df %>% mutate(across(everything(), ~ as.numeric(str_replace_all(., ",", ""))))
+  
+  # Combine into final DF
+  out <- tibble(
+    player = names,
+    position = toupper(position),
+    week = week
+  ) %>%
+    bind_cols(stats_df)
+  
+  return(out)
+}
+
+#Apply            #####
+positions <- c("qb", "rb", "wr", "te")
+weeks <- 1:18
+
+raw_data <- map_df(positions, function(pos) {
+  map_df(weeks, ~ scrape_fp(pos, .x))
+})
+
+preview<-raw_data %>% 
+  filter(V10==0)
+
+#View(preview)
+#View(raw_data)
+# took me about ~1 minute locally
+```
+
+After running this code, we are able to scrape the data off of the website and move forward. Before moving, a few key issues were noticed when exploring this data. The data structure included team acronyms at the end of the player name, i.e Sam Darnold SEA- short for Seahawks. This showed me that:
+
+1.  The names of these players would have to be uniformly mutated so that they match the original set
+
+2.  Player data from the 2025 pool was being used. This did indeed poke its head, as certain cases like Derrick Carr, who was a player on the New Orleans Saints and retired in 2024, was not present in these projections. This also meant that we may see rookie projections for 2024, for rookies that were drafted in 2025. This would be 0s across the board, but still add a negative skew.
+
+This first issue we aim to solve by running the next code. We remove the team acronyms and then when analyzing the data we see that player data in the `nflreadr` package ignores player suffixes, such as in the case of Patrick Mahomes II. This leads me to remove these suffixes as well, to have an easier merge.
+
+```{r constucting player projections and making names uniform }
+#| output: true
+#| code-fold: TRUE
+#| code-summary: "constucting player projections and making names uniform/Dimenstions of data"
+#| message: false
+# Create Datasets to merge                #####
+raw_data$player<- sub(" [^ ]*$", "", raw_data$player)
+raw_data$player <- sub(" (Jr\\.?|Sr\\.?|II|III|IV|V)$", "", raw_data$player)
+
+QBprojections<-raw_data %>% 
+  filter(position=="QB") %>% 
+  select(player,position,week,V10) %>% 
+  rename(Projected_HPPR=V10)
+
+RBprojections<-raw_data %>% 
+  filter(position=="RB") %>% 
+  select(player,position,week,V8) %>% 
+  rename(Projected_HPPR=V8)
+
+WRprojections<-raw_data %>% 
+  filter(position=="WR") %>% 
+  select(player,position,week,V8) %>% 
+  rename(Projected_HPPR=V8)
+
+TEprojections<-raw_data %>% 
+  filter(position=="TE") %>% 
+  select(player,position,week,V5) %>% 
+  rename(Projected_HPPR=V5)
+
+
+#View(TEprojections)
+#Skill_pos<-read.csv("~/Desktop/STA 9750 Final project/Fantasy_Skill_positions_2024.csv")
+
+Skill_pos<-Fantasy_Skill_positions
+
+Tight_end_proj<-Skill_pos %>% 
+  filter(position=="TE") %>% 
+  left_join(TEprojections,join_by(player_display_name==player,position==position,week==week)) %>% 
+  select(-fantasy_points,-half_PPR_fantasy_points) %>% 
+  mutate(Projected_HPPR=replace_na(Projected_HPPR,0))
+  
+Quarterback_proj<-Skill_pos %>% 
+  filter(position=="QB") %>% 
+  left_join(QBprojections,join_by(player_display_name==player,position==position,week==week)) %>% 
+  select(-c(fantasy_HPPR,receiving_fumbles_lost,receiving_2pt_conversions,fantasy_points)) %>% 
+  mutate(Projected_HPPR=replace_na(Projected_HPPR,0)) %>% 
+  rename(fantasy_HPPR=half_PPR_fantasy_points)
+
+Wide_receiver_proj<-Skill_pos %>% 
+  filter(position=="WR") %>% 
+  left_join(WRprojections,join_by(player_display_name==player,position==position,week==week)) %>% 
+  select(-fantasy_points,-half_PPR_fantasy_points) %>% 
+  mutate(Projected_HPPR=replace_na(Projected_HPPR,0))
+
+Running_Back_proj<-Skill_pos %>% 
+  filter(position=="RB") %>% 
+  left_join(RBprojections,join_by(player_display_name==player,position==position,week==week)) %>% 
+  select(-fantasy_points,-half_PPR_fantasy_points) %>% 
+  mutate(Projected_HPPR=replace_na(Projected_HPPR,0))
+
+# View(Quarterback_proj)
+# View(Running_Back_proj)
+# View(Wide_receiver_proj)
+
+dim(Wide_receiver_proj)
+dim(Quarterback_proj)
+dim(Running_Back_proj)
+dim(Tight_end_proj)
+
+Skill_position_final<-Wide_receiver_proj %>% 
+  full_join(Running_Back_proj) %>% 
+  full_join(Tight_end_proj) %>% 
+  mutate(sack_fumbles_lost=replace_na(sack_fumbles_lost,0))
+
+#write.csv(Skill_position_final,"~/Downloads/final_skills_positions_Data")
+
+```
+
+After running this next chunk we joined the half PPR projections with the actual performance to give us a complete data set.
+
+To answer specific question 1, we aim to look at the differenced number of projections vs actual performance.
+
+```{r player projections vs perforamnce}
+Updated_WR<-Wide_receiver_proj %>%
+  mutate(Proj.vs.Actual=fantasy_HPPR-Projected_HPPR)
+summary(Updated_WR$Proj.vs.Actual)
+
+Updated_RB<-Running_Back_proj %>%
+  mutate(Proj.vs.Actual=fantasy_HPPR-Projected_HPPR)
+summary(Updated_RB$Proj.vs.Actual)
+
+Updated_TE<-Tight_end_proj %>%
+  mutate(Proj.vs.Actual=fantasy_HPPR-Projected_HPPR)
+summary(Updated_TE$Proj.vs.Actual)
+
+Updated_QB<-Quarterback_proj%>%
+  mutate(Proj.vs.Actual=fantasy_HPPR-Projected_HPPR) 
+summary(Updated_QB$Proj.vs.Actual)
+```
+
+After running this code chunk we are able to see the performance of our skill position groups as a whole.
+
+From and initial glance at the data, we think that projections do a great job. Sure there are huge games by certain players, but large outliers are expected in a sport as random as the NFL. The median and mean seem almost perfect. That's when I realized that maybe our data was lying. An initial observation that we made in the beginning when looking at the performance, was we realize that rookies and other non existent players are inputted into our data frame as 0s. As such the data shows a median of 0 for 3 groups and very small for QBs. This led me to focusing my search on a subset of our data.
+
+### Secondary EDA
+
+In fantasy circles its almost always true that the bottom of your bench doesn't get played. you stash these players for an incidental injury or possible bye week rotation. The vast majority of the season your starting lineup stays consistent around the best available players at positions. As such I decided to focus the search on the :
+
+1.  Top 15 QB
+
+2.  Top 15 TE
+
+3.  Top 60 RB
+
+4.  Top 60 WR
+
+The reason for these numbers is that in a average 12 team league, you are allowed 1 QB, 2 WR, 2RB,1TE and a flex spot. As such we assume 1 position for TE and QB with 3 extra for each as a buffer. For RBS and WRS we take the first 60 with the formula of:
+
+$12 *2.5*2=60$ Where $12 = \# of teams$, $2.5 = 2 spots + .5 of flex spot$, and $2 = WR position + RB position$
+
+As such we move to analyze the performance of these statistics.
+
+```{r subset performance}
+
+totalQB <- Updated_QB %>% 
+  group_by(player_display_name) %>% 
+  summarise(
+    fantasy_HPPR = sum(fantasy_HPPR, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(fantasy_HPPR)) %>% 
+  slice_head(n=15)
+
+#View(totalQB)
+
+top25QBperformance <- Updated_QB %>% 
+  filter(player_display_name %in% totalQB$player_display_name)
+
+View(top25QBperformance)
+summary(top25QBperformance$Proj.vs.Actual)
+
+# for WR
+totalWR <- Updated_WR %>% 
+  group_by(player_display_name) %>% 
+  summarise(
+    fantasy_HPPR = sum(fantasy_HPPR, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(fantasy_HPPR)) %>% 
+  slice_head(n=60)
+
+View(totalWR)
+
+top25WRperformance <- Updated_WR %>% 
+  filter(player_display_name %in% totalWR$player_display_name)
+
+View(top25WRperformance)
+summary(top25WRperformance$Proj.vs.Actual)
+
+# for RB
+
+totalRB <- Updated_RB %>% 
+  group_by(player_display_name) %>% 
+  summarise(
+    fantasy_HPPR = sum(fantasy_HPPR, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(fantasy_HPPR)) %>% 
+  slice_head(n=60)
+
+View(totalRB)
+
+top25RBperformance <- Updated_RB %>% 
+  filter(player_display_name %in% totalRB$player_display_name)
+
+View(top25RBperformance)
+summary(top25RBperformance$Proj.vs.Actual)
+
+# for TE
+
+totalTE <- Updated_TE %>% 
+  group_by(player_display_name) %>% 
+  summarise(
+    fantasy_HPPR = sum(fantasy_HPPR, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(fantasy_HPPR)) %>% 
+  slice_head(n=15)
+
+View(totalTE)
+mean(totalQB$fantasy_HPPR)/17
+
+top25TEperformance <- Updated_TE %>% 
+  filter(player_display_name %in% totalTE$player_display_name)
+
+View(top25TEperformance)
+summary(top25TEperformance$Proj.vs.Actual)
+```
+
+When looking at the statistics from these outputs we see that the of the player that are actually being played week to week. The performance of Rb's is much better than we initially realized. This coincides with the fact that the NFl has a saying of "always wanting to get the run game going". This is a baseline function of most NFL offenses even if they are not very good. Running backs actually seem to have a predictable performance, relative to other groups because of this.
+
+Another intersting fact we see is that Tight ends perform very poorly. This coems from a sense that they are not accurate in their projections, rather they seem to outperform projections by quite a bit.
+
+| Position | AVG Score | \% Error |
+|----------|-----------|----------|
+| QB-top15 | 20.469    | 7.33%    |
+| TE-top15 | 9.129     | 17.52%   |
+| RB-top60 | 9.630     | 4.15%    |
+| WR-top60 | 10.138    | 10.85%   |
+
+## Analysis of Difference
+
+We see that when we take a ratio of median to Average score of this subset we get an error percent of almost 17.5% for tight ends. This is very concerning as this can be attributed to a very skewed distribution. It is possible that tight ends contain many extreme performers. To test this I decided to see what kind of distribution these position groups have.
+
+```{r Plot distributions}
+
+all_positions <- bind_rows(
+   totalRB %>% mutate(Position = "RB"),
+   totalWR %>% mutate(Position = "WR"),
+   totalQB %>% mutate(Position = "QB"),
+   totalTE %>% mutate(Position = "TE")
+)
+ggplot(all_positions, aes(x = fantasy_HPPR)) +
+geom_histogram(aes(y = after_stat(density)), bins = 30, fill = "#4a5568", color = "white", alpha = 0.7) +
+   stat_function(fun = dnorm, 
+                 args = list(mean = mean(all_positions$fantasy_HPPR, na.rm = TRUE), 
+                             sd = sd(all_positions$fantasy_HPPR, na.rm = TRUE)),
+                 color = "#e74c3c", linewidth = 1) +
+   facet_wrap(~ Position, scales = "free") +
+   labs(title = "Fantasy Points Distribution by Position with Normal Curves", 
+        x = "Fantasy HPPR", y = "Density") +
+   theme_minimal()
+```
+
+We see that Tight ends and Qbs have a very spread distribution which immediately explain why the median is so high on these 2 groups. We also see that the WR group has an EXTREME value that deviates away from the rest of the group. This is due to the career year that Jamarr Chase had and one of the only all time members of the triple crown, which is the stats leader for receptions, Yards and TDs. This alongside 2 of the greatest seasons by running backs:
+
+1. Saquon Barkley, who almost broke the single season rushing record which has been around since 1984 set by Eric Dickerson. 
+
+2. Derrick Henry, who was only ~100 yards behind Saquon with similar TD output. 
+
+We see that other than these drastic outliers, the data actually looks pretty normal. 
+Tight ends as such seem to not be consitant when trying to analyse output. We see that positional bias does occur especially in receiving roles. Tight ends and WR have the most median error when compared to the other skill positions. This can be attributed to the fact that they rely on getting the ball from the Qb and often are not the direct focal point of an offense. Running backs are given carries directly in the backfield so when the ball is given to them they have the freedom to create plays with only the defense and blocking playing a true major role. When looking at receiving roles, they are more sensitive to weather events or bad quarterback play as these factors are more influential from a purely inferential outlook. 
+
+## Volume effect
+
+After analyzing the performance of players and making some inferential comments about why this happens, we test whether the volume effect of players plays a role into the accuracy of projections. 
+
+WE run the following code to see the leaders in volume and to output the total amount of members in this top volume set that match the best performers. 
+
+```{r Volume based metrics}
+# volume based performance####
+
+total_volumeTE <- Updated_TE %>% 
+  group_by(player_display_name) %>% 
+  summarise(
+    targets = sum(targets, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(targets)) %>% 
+  slice_head(n=15)
+
+total_volumeTE
+
+sum(total_volumeTE$player_display_name %in% totalTE$player_display_name,na.rm = TRUE)
+
+# WR
+total_volumeWR <- Updated_WR %>% 
+  group_by(player_display_name) %>% 
+  summarise(
+    targets = sum(targets, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(targets)) %>% 
+  slice_head(n=60)
+
+total_volumeWR
+
+sum(total_volumeWR$player_display_name %in% totalWR$player_display_name,na.rm = TRUE)
+# For RBs
+
+total_volumeRB <- Updated_RB %>% 
+  group_by(player_display_name) %>% 
+  summarise(
+    carries = sum(carries, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(carries)) %>% 
+  slice_head(n=60)
+
+total_volumeRB
+
+sum(total_volumeRB$player_display_name %in% totalRB$player_display_name,na.rm = TRUE)
+
+# For Qbs
+total_volumeQB <- Updated_QB %>% 
+  group_by(player_display_name) %>% 
+  summarise(
+    targets = sum(attempts, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(targets)) %>% 
+  slice_head(n=60)
+
+total_volumeQB
+
+sum(total_volumeQB$player_display_name %in% totalQB$player_display_name,na.rm = TRUE)
+
+
+```
+When looking at the output, we see that The TE position once again does not perform well. We only have 11/15 players who had the highest volume in the top 15 of performers. This can be attributed to Tight ends being more redone threats or safety blanket check downs. Even when they get the ball sometimes its in short yardage situations leading to smaller average fantasy performance. 
+
+This trend changes when we look at Wide receiver and Running back. They have 53/60 players in the top volume list also in the top performance list. This in turn leads us to think that volume does play a role in projections. The majority of the top volume players are also the top performers. This makes sense as more volume means more opportunities to score points. However, it is important to note that volume alone does not guarantee success. Efficiency and situation usage also play crucial roles in a player's performance. For example, a player with high volume but low efficiency may not perform as well as a player with moderate volume but high efficiency.
+
+With quarterbacks the evidence is more concrete, 100% of the top 15 QBs in volume are also in the top 15 QBs in performance. This is expected as QBs are the focal point of an offense and their performance is directly tied to their volume. If quarterbacks are throwing the ball more they either are trying to catch up in a game or are in a pass heavy offense. Both of these situations lead to more opportunities for fantasy points.
+
+This also coincides with things like injuries and players getting benched. It is fair to say that players who are injured or benched will have lower volume and thus lower performance. This is especially true for the quarterback which is the most important position on the field. If a starting quarterback is injured or benched, it can have a significant impact on the team's offensive performance and thus the fantasy/real performance of the players around them. 
+
+## Conclusion
+
+In conclusion, player projections in fantasy football are influenced by positional differences and volume effects. Different skill positions exhibit varying levels of accuracy in projections, with tight ends showing the highest median error. Volume plays a significant role in player performance, with top volume players often being the top performers. However, volume alone does not guarantee success, as efficiency and situation usage also play crucial roles. Understanding these factors can help fantasy football managers make more informed decisions when selecting players for their teams. 
+
+With more time a possibily that i think was acheivable but would take time to understand is to implement a machine learning model to predict player performance based on historical data. This could involve using regression analysis or more advanced techniques like random forests or neural networks to identify patterns and trends in player performance. By training a model on past data, it may be possible to improve the accuracy of player projections and provide more reliable insights for fantasy football managers. 
+
+I also beleive that incorporating more advanced statistics and metrics into the analysis could provide a deeper understanding of player performance. This could include looking at metrics like yards after catch, air yards, and target share for receivers, or yards after contact and missed tackles for running backs. By analyzing these advanced metrics, it may be possible to identify players who are undervalued or overvalued in traditional projections and make more informed decisions when selecting players for fantasy football teams.
+
+Lastly there was many constraints in terms of gtrends, as comparing players across multiple groups was not possible due to API limits. With more time I would try to find a way to compare players across positions to see if there is a correlation between player popularity and performance. This could involve using alternative data sources or finding ways to optimize the use of the gtrends API to gather more comprehensive data on player popularity. By analyzing the relationship between player popularity and performance, it may be possible to identify trends and patterns that can inform fantasy football strategies and decision-making.
