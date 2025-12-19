@@ -108,10 +108,10 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#baseline-projection-accuracy" id="toc-baseline-projection-accuracy" class="nav-link" data-scroll-target="#baseline-projection-accuracy"><span class="header-section-number">3.1</span> Baseline Projection Accuracy</a></li>
   <li><a href="#fantasy-relevant-subset" id="toc-fantasy-relevant-subset" class="nav-link" data-scroll-target="#fantasy-relevant-subset"><span class="header-section-number">3.2</span> Fantasy-Relevant Subset</a></li>
   <li><a href="#volume-and-projection-error" id="toc-volume-and-projection-error" class="nav-link" data-scroll-target="#volume-and-projection-error"><span class="header-section-number">3.3</span> Volume and Projection Error</a></li>
-  <li><a href="#interpretation" id="toc-interpretation" class="nav-link" data-scroll-target="#interpretation"><span class="header-section-number">3.4</span> Interpretation</a></li>
+  <li><a href="#risk-variance-and-fantasy-outcomes" id="toc-risk-variance-and-fantasy-outcomes" class="nav-link" data-scroll-target="#risk-variance-and-fantasy-outcomes"><span class="header-section-number">3.4</span> Risk, Variance, and Fantasy Outcomes</a></li>
   </ul></li>
   <li><a href="#part-4-trends-pressure-and-visibility" id="toc-part-4-trends-pressure-and-visibility" class="nav-link" data-scroll-target="#part-4-trends-pressure-and-visibility"><span class="header-section-number">4</span> Part 4: Trends, Pressure, and Visibility</a></li>
-  <li><a href="#part-5-possible-improvements-and-limitations" id="toc-part-5-possible-improvements-and-limitations" class="nav-link" data-scroll-target="#part-5-possible-improvements-and-limitations"><span class="header-section-number">5</span> Part 5: Possible Improvements and Limitations</a></li>
+  <li><a href="#part-5-limitations-and-possible-improvements" id="toc-part-5-limitations-and-possible-improvements" class="nav-link" data-scroll-target="#part-5-limitations-and-possible-improvements"><span class="header-section-number">5</span> Part 5: Limitations and Possible Improvements</a></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">6</span> Conclusion</a></li>
   </ul>
 </nav>
@@ -148,26 +148,27 @@ ul.task-list li input[type="checkbox"] {
 <hr>
 <section id="part-1-introduction" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Part 1: Introduction</h1>
-<p>Fantasy football has long been embedded in sports culture in the United States. From humorous last-place punishments to handcrafted trophies for league champions, fantasy football has evolved from a casual pastime into a serious competitive activity. This cultural relevance is particularly pronounced in the United States, which hosts the largest fantasy football community in the world. According to recent estimates, approximately <strong>30 million Americans participated in fantasy football leagues in 2022 alone</strong>, a number that has continued to grow steadily. ESPN reported that in 2024, more than <strong>13 million users played fantasy football on ESPN platforms</strong>, marking an all-time record for the company.</p>
-<p>These statistics highlight a broader cultural shift. Fantasy football is no longer a niche activity reserved for die-hard sports fans. Instead, it has become a mainstream form of engagement with professional sports, cutting across age, income, and geographic boundaries. With nearly <strong>one in ten Americans</strong> participating, fantasy football now occupies a space similar to other major leisure industries.</p>
-<p>Beyond entertainment, fantasy sports have increasingly taken on economic importance. Industry forecasts project that the <strong>fantasy sports market will be worth approximately $56.36 billion by 2030</strong>, reflecting rapid growth driven by data availability, mobile technology, and integration with legalized sports betting. Since the Supreme Court’s 2018 decision to overturn PASPA, legal sports betting in the United States has expanded dramatically. Total annual sports betting volume has surged from <strong>$1.5 billion in 2018 to nearly $150 billion</strong>, fundamentally changing how fans interact with sports.</p>
+<p>Fantasy football has long been embedded in sports culture in the United States. From humorous last-place punishments to handcrafted trophies for league champions, fantasy football has evolved from a casual pastime into a serious competitive activity. What was once a niche hobby among dedicated NFL fans has grown into a mainstream cultural phenomenon with millions of participants nationwide.</p>
+<p>This cultural relevance is particularly pronounced in the United States, which hosts the largest fantasy football community in the world. According to industry estimates, approximately <strong>30 million Americans participated in fantasy football leagues in 2022 alone</strong>, a number that has continued to grow steadily in recent years. ESPN reported that in 2024, more than <strong>13 million users played fantasy football on ESPN platforms</strong>, marking an all-time record for the company.</p>
+<p>These statistics highlight a broader shift in how fans engage with professional sports. Fantasy football is no longer limited to avid sports enthusiasts. Instead, it spans age groups, income levels, and geographic regions. With nearly <strong>one in ten Americans</strong> participating, fantasy football now occupies a cultural and economic space comparable to other major leisure industries.</p>
+<p>Beyond entertainment, fantasy sports have taken on increasing economic importance. Industry forecasts project that the <strong>fantasy sports market will be worth approximately $56.36 billion by 2030</strong>, driven by advances in data analytics, mobile accessibility, and integration with legalized sports betting. Since the Supreme Court’s 2018 decision to overturn PASPA, legal sports betting in the United States has expanded rapidly. Annual betting volume has grown from <strong>$1.5 billion in 2018 to nearly $150 billion</strong>, fundamentally changing how fans consume and interact with sports.</p>
 <iframe title="U.S. Sports Betting Annual Revenue Growth" src="https://rg.org/charts/States Yearly growth chart/----" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="300" data-external="1">
 </iframe>
-<p>Fantasy football now exists at the intersection of entertainment, analytics, and gambling. While traditional fantasy leagues may not involve direct wagering, the financial incentives—league entry fees, prize pools, and reputational stakes—are very real. As a result, fantasy participants increasingly rely on <strong>weekly player projections</strong> to guide lineup decisions. These projections are presented by fantasy platforms and odds-makers as objective, data-driven estimates of expected performance. However, the reliability of these projections is rarely questioned using rigorous statistical analysis.</p>
+<p>Fantasy football exists at the intersection of entertainment, analytics, and gambling. While many leagues remain informal, the financial incentives—league entry fees, prize pools, and reputational stakes—are real. As a result, fantasy participants increasingly rely on <strong>weekly player projections</strong> to guide lineup decisions. These projections are presented by fantasy platforms as objective, data-driven estimates of expected performance. However, their reliability is often assumed rather than empirically validated.</p>
 <section id="overarching-question" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="overarching-question"><span class="header-section-number">1.1</span> Overarching Question</h2>
-<p>Given the financial, emotional, and competitive stakes involved, accuracy in fantasy football projections has never been more important. Most fantasy participants assume that projections represent an unbiased and reliable estimate of expected player performance. This assumption motivates the central research question of this paper:</p>
+<p>Given the financial, emotional, and competitive stakes involved, accuracy in fantasy football projections has never been more important. Most fantasy participants implicitly trust projections as unbiased representations of expected outcomes. This assumption motivates the central research question of this paper:</p>
 <p><strong>How accurate are fantasy football projections in predicting actual player performance?</strong></p>
-<p>More specifically, this paper examines whether systematic patterns in projection error exist that may disadvantage fantasy players in ways that are largely outside of their control.</p>
+<p>Beyond raw accuracy, this paper also explores whether projection errors exhibit systematic patterns that may disadvantage fantasy managers in ways largely outside of their control.</p>
 </section>
 <section id="specific-questions" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="specific-questions"><span class="header-section-number">1.2</span> Specific Questions</h2>
-<p>To answer the overarching question, the analysis focuses on the following research questions:</p>
+<p>To operationalize the overarching question, the analysis focuses on two related research questions:</p>
 <ol type="1">
 <li><p><strong>Is there systematic bias across skill positions?</strong><br>
-Are certain positions more likely to overperform or underperform projections?</p></li>
+Are certain positions more likely to overperform or underperform projections on a consistent basis?</p></li>
 <li><p><strong>Does player volume improve projection accuracy?</strong><br>
-Are high-usage players projected more accurately than lower-volume players?</p></li>
+Are players with higher opportunity volume (targets, carries, attempts) projected more accurately than lower-volume players?</p></li>
 </ol>
 <hr>
 </section>
@@ -175,18 +176,18 @@ Are high-usage players projected more accurately than lower-volume players?</p><
 <section id="part-2-data" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Part 2: Data</h1>
 <p>The analysis draws from multiple complementary data sources to capture both <strong>actual performance</strong> and <strong>expected performance</strong> for fantasy-relevant NFL players.</p>
-<p>The primary source of player performance data is the <code>nflreadr</code> package in R. This package provides comprehensive weekly and play-by-play player statistics for all NFL seasons, including yardage, touchdowns, receptions, attempts, and fantasy scoring outputs. The reliability and completeness of <code>nflreadr</code> make it well-suited for quantitative analysis.</p>
-<p>To measure expected performance, historical weekly fantasy projections were collected from <strong>FantasyPros</strong>, a widely used fantasy football analytics platform. FantasyPros aggregates projections from five major fantasy providers and presents a consensus estimate for each player-week. These projections reflect what the average fantasy manager is exposed to when making lineup decisions.</p>
-<p>The FantasyPros data were scraped and merged with <code>nflreadr</code> performance data to create a unified dataset covering the <strong>2024 NFL regular season</strong>. All fantasy points were calculated using a <strong>Half-PPR (Points Per Reception)</strong> scoring format, which reflects a common league structure and balances volume-based scoring with touchdown dependence.</p>
-<p>To explore potential behavioral effects, the analysis also incorporates <strong>Google search trend data</strong> using the <code>gtrends</code> package. Player search interest serves as a proxy for public attention and media pressure, allowing exploratory analysis of whether visibility correlates with deviations from projections.</p>
-<p>The final dataset consists of <strong>22 variables</strong>, including fantasy points, projected points, positional indicators, volume metrics (targets, carries, attempts), and trend-based features. While not all variables apply uniformly across positions, the dataset provides a comprehensive view of offensive fantasy production.</p>
+<p>The primary source of realized performance data is the <code>nflreadr</code> package in R. This package provides comprehensive weekly and play-by-play player statistics for all NFL seasons, including yardage, touchdowns, receptions, attempts, and fantasy scoring outputs. The consistency and reliability of <code>nflreadr</code> make it well-suited for quantitative evaluation of player outcomes.</p>
+<p>Expected performance data were collected from <strong>FantasyPros</strong>, a widely used fantasy football analytics platform. FantasyPros aggregates projections from five major fantasy providers and publishes a consensus estimate for each player-week. These projections reflect what the average fantasy manager encounters when making lineup decisions.</p>
+<p>The FantasyPros projections were scraped and merged with <code>nflreadr</code> data to construct a unified dataset covering the <strong>2024 NFL regular season</strong>. All fantasy points were calculated using a <strong>Half-PPR (Points Per Reception)</strong> scoring format, which balances volume-based scoring with touchdown dependence and reflects common league settings.</p>
+<p>To explore whether player visibility or public attention influences performance relative to expectations, the analysis also incorporates <strong>Google search trend data</strong> using the <code>gtrends</code> package. Player search interest serves as a proxy for media attention and perceived pressure.</p>
+<p>The final dataset consists of <strong>22 variables</strong>, including fantasy points, projected points, positional indicators, volume metrics (targets, carries, attempts), and trend-based features. While not all variables apply uniformly across positions, the dataset captures a broad representation of offensive fantasy production.</p>
 <hr>
 </section>
 <section id="part-3-analysis" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Part 3: Analysis</h1>
 <section id="baseline-projection-accuracy" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="baseline-projection-accuracy"><span class="header-section-number">3.1</span> Baseline Projection Accuracy</h2>
-<p>As a baseline measure of projection performance, the difference between <strong>actual fantasy points and projected fantasy points</strong> was calculated on a weekly basis. Positive values indicate overperformance, while negative values indicate underperformance.</p>
+<p>Projection accuracy is first evaluated by calculating the difference between <strong>actual fantasy points and projected fantasy points</strong> on a weekly basis. Positive values indicate overperformance, while negative values indicate underperformance relative to projections.</p>
 <p>The following table summarizes the distribution of these differences by position:</p>
 <table class="caption-top table">
 <thead>
@@ -239,12 +240,12 @@ Are high-usage players projected more accurately than lower-volume players?</p><
 </tr>
 </tbody>
 </table>
-<p>At first glance, projections appear reasonably accurate across positions. Median values near zero suggest that typical outcomes align closely with projections. However, means are consistently higher than medians, indicating right-skewed distributions driven by occasional extreme performances.</p>
-<p>Because fantasy outcomes are highly sensitive to outliers, the median provides a more reliable measure of central tendency in this context.</p>
+<p>At a surface level, projections appear reasonably accurate. Median values close to zero suggest that, in a typical week, projections align closely with realized outcomes. However, the means exceed the medians for all positions, indicating right-skewed distributions driven by occasional extreme performances.</p>
+<p>Because fantasy football outcomes are highly sensitive to outliers, the median provides a more reliable measure of projection accuracy than the mean.</p>
 </section>
 <section id="fantasy-relevant-subset" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="fantasy-relevant-subset"><span class="header-section-number">3.2</span> Fantasy-Relevant Subset</h2>
-<p>Fantasy managers do not evaluate all NFL players equally. To better reflect realistic decision-making contexts, the analysis restricts attention to players who are typically rostered in standard 12-team leagues:</p>
+<p>Fantasy managers do not evaluate all NFL players equally. To better reflect realistic decision-making contexts, the analysis focuses on players typically rostered in standard 12-team leagues:</p>
 <ul>
 <li>Top 15 quarterbacks<br>
 </li>
@@ -310,11 +311,11 @@ Are high-usage players projected more accurately than lower-volume players?</p><
 </tr>
 </tbody>
 </table>
-<p>Running backs exhibit the lowest median projection error, indicating relatively stable and predictable production. Tight ends, by contrast, show greater inconsistency relative to their projections despite having lower overall variance.</p>
+<p>Running backs exhibit the lowest median projection error, suggesting relatively stable and predictable production. Tight ends, despite lower variance, display inconsistent alignment between projections and actual outcomes, indicating structural challenges in projecting the position.</p>
 </section>
 <section id="volume-and-projection-error" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="volume-and-projection-error"><span class="header-section-number">3.3</span> Volume and Projection Error</h2>
-<p>To assess whether opportunity volume improves projection accuracy, high-volume players were compared against top fantasy scorers:</p>
+<p>To evaluate whether opportunity volume improves projection accuracy, high-volume players were compared against top fantasy scorers:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -351,37 +352,39 @@ Are high-usage players projected more accurately than lower-volume players?</p><
 </tr>
 </tbody>
 </table>
-<p>Running backs stand out as the most predictable position group. High-volume RBs are projected accurately and exhibit the lowest proportional error. Tight ends show the weakest relationship between volume and performance, reinforcing their volatility.</p>
+<p>Running backs show the strongest relationship between volume and performance, as well as the lowest proportional error. Tight ends, in contrast, show weak alignment between volume and scoring, reinforcing their volatility.</p>
 </section>
-<section id="interpretation" class="level2" data-number="3.4">
-<h2 data-number="3.4" class="anchored" data-anchor-id="interpretation"><span class="header-section-number">3.4</span> Interpretation</h2>
-<p>These results provide evidence of <strong>systematic positional bias</strong> in fantasy football projections. Projections are most reliable for running backs, moderately reliable for quarterbacks and wide receivers, and least reliable for tight ends.</p>
+<section id="risk-variance-and-fantasy-outcomes" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="risk-variance-and-fantasy-outcomes"><span class="header-section-number">3.4</span> Risk, Variance, and Fantasy Outcomes</h2>
+<p>From a statistical perspective, fantasy football outcomes are fundamentally driven by variance. Even when projections are unbiased on average, high variance increases the probability of extreme outcomes. Positions with higher volatility introduce greater risk into lineup decisions, particularly in head-to-head formats where weekly outcomes matter more than season-long averages.</p>
+<p>Tight ends represent a high-variance, low-mean position, while running backs exhibit lower relative variance and higher predictability. This asymmetry helps explain why fantasy managers often perceive tight end outcomes as “unlucky,” even when making rational decisions.</p>
 <hr>
 </section>
 </section>
 <section id="part-4-trends-pressure-and-visibility" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Part 4: Trends, Pressure, and Visibility</h1>
-<p>An exploratory extension of the analysis examines whether public attention—proxied by Google search trends—correlates with deviations from projections. The hypothesis is that heightened visibility may influence player performance through increased pressure or motivation.</p>
-<p>Results suggest weak and inconsistent relationships between search interest and projection error. While some high-profile players display increased volatility during periods of heightened attention, the overall effect is not strong enough to draw definitive conclusions. This suggests that projection inaccuracies are more likely driven by structural modeling limitations rather than behavioral responses to visibility.</p>
+<p>An exploratory extension of the analysis examines whether public attention—proxied by Google search trends—correlates with deviations from projections. The hypothesis is that increased visibility may influence player performance through heightened pressure or motivation.</p>
+<p>The results indicate weak and inconsistent relationships between search interest and projection error. While some high-profile players display increased volatility during periods of heightened attention, the overall effect is not statistically meaningful. This suggests that projection inaccuracies are more likely driven by structural modeling limitations rather than behavioral responses to media pressure.</p>
 <hr>
 </section>
-<section id="part-5-possible-improvements-and-limitations" class="level1" data-number="5">
-<h1 data-number="5"><span class="header-section-number">5</span> Part 5: Possible Improvements and Limitations</h1>
-<p>Further improvements to the analysis could incorporate additional modeling techniques. Density plots indicate that running back and wide receiver distributions are closer to normal, while quarterback and tight end distributions exhibit heavier tails. Extreme seasons—such as historic performances by Derrick Henry, Saquon Barkley, and Ja’Marr Chase—exert disproportionate influence on summary statistics.</p>
-<p>Future work could include:</p>
+<section id="part-5-limitations-and-possible-improvements" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Part 5: Limitations and Possible Improvements</h1>
+<p>Several limitations should be acknowledged. First, the analysis focuses exclusively on a single NFL season. While 2024 provides a rich dataset, multi-season analysis would improve external validity.</p>
+<p>Second, projections are treated as fixed benchmarks. In practice, projections evolve throughout the week as injury and weather information becomes available. Future work could incorporate time-adjusted projections.</p>
+<p>Potential methodological improvements include:</p>
 <ul>
 <li>Player-level random effects models<br>
 </li>
-<li>Injury-adjusted projections<br>
+<li>Injury-adjusted opportunity metrics<br>
 </li>
 <li>Team context variables such as pace and implied totals</li>
 </ul>
-<p>Despite these limitations, the results highlight an important insight: <strong>fantasy football outcomes are not purely a function of managerial skill</strong>. Structural biases in projection systems can meaningfully affect outcomes.</p>
+<p>Despite these limitations, the results highlight a key insight: <strong>fantasy football outcomes are not solely a function of managerial skill</strong>.</p>
 <hr>
 </section>
 <section id="conclusion" class="level1" data-number="6">
 <h1 data-number="6"><span class="header-section-number">6</span> Conclusion</h1>
-<p>Fantasy football is often described as a game of skill. This analysis demonstrates that while skill matters, <strong>projection bias and positional volatility play a significant role</strong> in determining outcomes. Tight end projections are systematically less reliable, while running back projections provide the greatest stability.</p>
+<p>Fantasy football is often described as a game of skill. This analysis demonstrates that while skill matters, <strong>projection bias and positional volatility play a significant role</strong> in determining outcomes. Tight end projections are systematically less reliable, while running back projections offer the greatest stability.</p>
 <p>For fantasy managers, this implies that losing a matchup—or even an entire league—may not always reflect poor decision-making. In many cases, the numbers simply were not on your side.</p>
 
 
