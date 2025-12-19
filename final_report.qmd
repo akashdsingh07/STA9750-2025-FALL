@@ -2,100 +2,146 @@
 title: "Final Report 9750"
 subtitle: "Losing your Fantasy League might not be your fault"
 author: "Akashdeep Singh"
-format: html
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
 ---
 
 ------------------------------------------------------------------------
 
-# **Part 1: Introduction**
+# Part 1: Introduction
 
-Fantasy football has always been a part of sports culture. From odd last place punishments, to homemade trophies for league winners, fantasy football has always been a staple of avid sports fans. This is especially the case with Fantasy football which, in the US has the largest league. [Estimates](https://www.statista.com/topics/10895/fantasy-sports-in-the-us/#topicOverview) have projected that **\~30 million Americans in 2022 alone** played in fantasy football leagues. This number has definitely grown since, as [ESPN](https://espnpressroom.com/us/press-releases/2024/09/another-all-time-record-13-million-fans-playing-espn-fantasy-football-in-2024/#:~:text=Another%20All%2DTime%20Record:%2013,2024%20%2D%20ESPN%20Press%20Room%20U.S.) has reported they have had over 13 million players alone in 2024, which is a record.
+Fantasy football has long been embedded in sports culture in the United States. From humorous last-place punishments to handcrafted trophies for league champions, fantasy football has evolved from a casual pastime into a serious competitive activity. This cultural relevance is particularly pronounced in the United States, which hosts the largest fantasy football community in the world. According to recent estimates, approximately **30 million Americans participated in fantasy football leagues in 2022 alone**, a number that has continued to grow steadily. ESPN reported that in 2024, more than **13 million users played fantasy football on ESPN platforms**, marking an all-time record for the company.
 
-All this to say, fantasy football has grown from a niche game, to a staple of american culture. With almost 1/10 people in america playing the game it has become more important to people to perform well. There is even [some studies](https://www.prnewswire.com/news-releases/fantasy-sports-market-to-be-worth-56-36-billion-by-2030-grand-view-research-inc-301853997.html) that show the fantasy sports market to be worth **\$56.36 Billion by 2030**. More than ever gambling has entered the everyday life of Americans. As shown below, US volume of betting on sports has ***grown from \$1.5 billion in 2018 to \$150 billion***. Sports betting and fantasy leagues are more so than ever before about dollars and cents.
+These statistics highlight a broader cultural shift. Fantasy football is no longer a niche activity reserved for die-hard sports fans. Instead, it has become a mainstream form of engagement with professional sports, cutting across age, income, and geographic boundaries. With nearly **one in ten Americans** participating, fantasy football now occupies a space similar to other major leisure industries.
+
+Beyond entertainment, fantasy sports have increasingly taken on economic importance. Industry forecasts project that the **fantasy sports market will be worth approximately \$56.36 billion by 2030**, reflecting rapid growth driven by data availability, mobile technology, and integration with legalized sports betting. Since the Supreme Court’s 2018 decision to overturn PASPA, legal sports betting in the United States has expanded dramatically. Total annual sports betting volume has surged from **\$1.5 billion in 2018 to nearly \$150 billion**, fundamentally changing how fans interact with sports.
 
 <iframe title="U.S. Sports Betting Annual Revenue Growth" src="https://rg.org/charts/States Yearly growth chart/----" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="300" data-external="1">
+  
+  </iframe>
+  
+Fantasy football now exists at the intersection of entertainment, analytics, and gambling. While traditional fantasy leagues may not involve direct wagering, the financial incentives—league entry fees, prize pools, and reputational stakes—are very real. As a result, fantasy participants increasingly rely on **weekly player projections** to guide lineup decisions. These projections are presented by fantasy platforms and odds-makers as objective, data-driven estimates of expected performance. However, the reliability of these projections is rarely questioned using rigorous statistical analysis.
 
-</iframe>
+## Overarching Question
 
-### *Overarching Question*
+Given the financial, emotional, and competitive stakes involved, accuracy in fantasy football projections has never been more important. Most fantasy participants assume that projections represent an unbiased and reliable estimate of expected player performance. This assumption motivates the central research question of this paper:
 
-Accuracy has never been more important when looking at which players to play a given week. Most of the time, projections are given by odds makers and fantasy sites, and are expected to be taken at face value. But **how accurate are these projections in predicting actual performance**? That is the Overarching question we aim to answer in this paper
+**How accurate are fantasy football projections in predicting actual player performance?**
 
-And to answer this question, quantitative proof was required to to really construct a meaningful conclusion. thus the following specific questions are what the research chose to answer.
+More specifically, this paper examines whether systematic patterns in projection error exist that may disadvantage fantasy players in ways that are largely outside of their control.
 
-### *Specific Questions*
+## Specific Questions
 
-1.  Is there systematic bias when observing the different skill positions- *are certain positions more likely to out-perform/under-perform projections?*
+To answer the overarching question, the analysis focuses on the following research questions:
 
-2.  Does player volume lead to accurate/inaccurate projections?
+1. **Is there systematic bias across skill positions?**  
+   Are certain positions more likely to overperform or underperform projections?
 
+2. **Does player volume improve projection accuracy?**  
+   Are high-usage players projected more accurately than lower-volume players?
 
-After establishing these questions, the only thing left to do was test out the hypothesis.
+------------------------------------------------------------------------
 
-# **Part 2: Data**
+# Part 2: Data
 
-The data used to implement the research conducted stemmed from 2 major sources. 1 such source being `nflreadr`, which is a package on R that houses all past player data from NFL seasons.
+The analysis draws from multiple complementary data sources to capture both **actual performance** and **expected performance** for fantasy-relevant NFL players.
 
-Next to supplement this package the use of [Fantasy Pros](https://www.fantasypros.com) was needed. This website aggregates fantasy data across 5 major fantasy platforms and provides historical weekly projections of such. The data was scraped and joined to create a final data set that showed projections and performance of players in the 2024 season.[^1]
+The primary source of player performance data is the `nflreadr` package in R. This package provides comprehensive weekly and play-by-play player statistics for all NFL seasons, including yardage, touchdowns, receptions, attempts, and fantasy scoring outputs. The reliability and completeness of `nflreadr` make it well-suited for quantitative analysis.
 
-[^1]: Half PPR-points per reception, was used to analyze data.
+To measure expected performance, historical weekly fantasy projections were collected from **FantasyPros**, a widely used fantasy football analytics platform. FantasyPros aggregates projections from five major fantasy providers and presents a consensus estimate for each player-week. These projections reflect what the average fantasy manager is exposed to when making lineup decisions.
 
-Lastly the package `gtrends` was used to analyze player trends by importing player search trends on google and normalizing across groups.
+The FantasyPros data were scraped and merged with `nflreadr` performance data to create a unified dataset covering the **2024 NFL regular season**. All fantasy points were calculated using a **Half-PPR (Points Per Reception)** scoring format, which reflects a common league structure and balances volume-based scoring with touchdown dependence.
 
-In totality the final dataset conissted of 22 attributes ranging from yards accumulation to attempts and TD. All stats recorded vary by skill group but are applied to cover (rushing,passing,throwing).
+To explore potential behavioral effects, the analysis also incorporates **Google search trend data** using the `gtrends` package. Player search interest serves as a proxy for public attention and media pressure, allowing exploratory analysis of whether visibility correlates with deviations from projections.
 
-# **Part 3: Analysis**
+The final dataset consists of **22 variables**, including fantasy points, projected points, positional indicators, volume metrics (targets, carries, attempts), and trend-based features. While not all variables apply uniformly across positions, the dataset provides a comprehensive view of offensive fantasy production.
 
-As a baseline to understand projection performance, we want to see performance vs actual. Analyzing the performance of players vs their projections we get the following statistics:
+------------------------------------------------------------------------
+
+# Part 3: Analysis
+
+## Baseline Projection Accuracy
+
+As a baseline measure of projection performance, the difference between **actual fantasy points and projected fantasy points** was calculated on a weekly basis. Positive values indicate overperformance, while negative values indicate underperformance.
+
+The following table summarizes the distribution of these differences by position:
 
 | Position | Min    | 1st Qu. | Median | Mean   | 3rd Qu. | Max    |
-|----------|--------|---------|--------|--------|---------|--------|
-| QB       | -19.64 | -4.000  | 0.140  | 1.368  | 5.780   | 33.440 |
-| TE       | -10.70 | -1.500  | 0.000  | 0.7517 | 2.250   | 29.720 |
-| RB       | -14.00 | -2.200  | 0.000  | 1.130  | 3.500   | 37.200 |
-| WR       | -14.70 | -2.100  | 0.000  | 1.224  | 3.400   | 33.400 |
+|---------|--------|---------|--------|--------|---------|--------|
+| QB | -19.64 | -4.00 | 0.14 | 1.368 | 5.78 | 33.44 |
+| TE | -10.70 | -1.50 | 0.00 | 0.752 | 2.25 | 29.72 |
+| RB | -14.00 | -2.20 | 0.00 | 1.130 | 3.50 | 37.20 |
+| WR | -14.70 | -2.10 | 0.00 | 1.224 | 3.40 | 33.40 |
 
-We see from this table that it seems on average projections are pretty accurate for most skill position groups.With QB being the most inaccurate on average and median, and TE being the most stable around its projections. The median shows great accuracy and is arguably a better measure of performance with this data, because of large outliers.[^2]
+At first glance, projections appear reasonably accurate across positions. Median values near zero suggest that typical outcomes align closely with projections. However, means are consistently higher than medians, indicating right-skewed distributions driven by occasional extreme performances.
 
-[^2]: Negative values represent an under performance, while positive values represent an over performance, relative to weekly projection.
+Because fantasy outcomes are highly sensitive to outliers, the median provides a more reliable measure of central tendency in this context.
 
-This initially would point to a thought process that boom weeks are just a part of normal fluctuations, that eventually revert to the mean. However, it would be more accurate to look at a subset of players, as not all players in fantasy are treated equally. Taking the 15 best performers for 2024 in both QB and TE, and top 60 performers in RB and WR[^3], we get the following statistics.
+## Fantasy-Relevant Subset
 
-[^3]: Tight ends and Quarter backs only have 1 plot on a fantasy team, and assuming a 12 team lague we look for the top 15 players, Running backs and wide receivers have 2 lots each and a flex spot, so we take 2.5*12*2 which gives us 60 spots.
+Fantasy managers do not evaluate all NFL players equally. To better reflect realistic decision-making contexts, the analysis restricts attention to players who are typically rostered in standard 12-team leagues:
 
-| Position | Min    | 1st Qu. | Median | Mean  | 3rd Qu. | Max   | Var    |
-|----------|--------|---------|--------|-------|---------|-------|--------|
-| QB-top15 | -17.86 | -3.98   | 1.50   | 2.568 | 7.98    | 33.44 | 86.359 |
-| TE-top15 | -10.70 | -3.40   | 1.60   | 1.799 | 5.80    | 21.20 | 38.341 |
-| RB-top60 | -14.00 | -3.10   | 0.40   | 1.622 | 5.30    | 37.20 | 51.651 |
-| WR-top60 | -12.70 | -3.50   | 1.10   | 2.281 | 6.60    | 33.40 | 62.380 |
+- Top 15 quarterbacks  
+- Top 15 tight ends  
+- Top 60 running backs  
+- Top 60 wide receivers  
 
-Based on this we see a smaller variation in the median of the RB position relative to the other skill positions. Meaningful fantasy performers-top 60 players- in the RB position seem to project well. This supports projections of RBs being more stable. This table also shows that Tight ends are the most volatile when looking at median. This is worrisome as Tight ends also have the smallest variance amongst the groups.
+| Position | Min | 1st Qu. | Median | Mean | 3rd Qu. | Max | Var |
+|---------|-----|---------|--------|------|---------|-----|-----|
+| QB-top15 | -17.86 | -3.98 | 1.50 | 2.568 | 7.98 | 33.44 | 86.36 |
+| TE-top15 | -10.70 | -3.40 | 1.60 | 1.799 | 5.80 | 21.20 | 38.34 |
+| RB-top60 | -14.00 | -3.10 | 0.40 | 1.622 | 5.30 | 37.20 | 51.65 |
+| WR-top60 | -12.70 | -3.50 | 1.10 | 2.281 | 6.60 | 33.40 | 62.38 |
 
-Not only this, but when cross referencing volume of tight ends and their appearance in the top 15 fantasy scorers, it is clear that volume is not as consistent with production for this position group.
+Running backs exhibit the lowest median projection error, indicating relatively stable and predictable production. Tight ends, by contrast, show greater inconsistency relative to their projections despite having lower overall variance.
 
-| Position | AVG Score | \% of vol leaders | \% error[^4] |
-|----------|-----------|-------------------|--------------|
-| QB-top15 | 20.469    | 100%              | 7.33%        |
-| TE-top15 | 9.1290    | 73.33%            | 17.52%       |
-| RB-top60 | 9.6300    | 88.33%            | 4.153%       |
-| WR-top60 | 10.138    | 88.33%            | 10.85%       |
+## Volume and Projection Error
 
-[^4]: $\% error= \frac {\text{median difference}}{\text{AVG Score}}$
+To assess whether opportunity volume improves projection accuracy, high-volume players were compared against top fantasy scorers:
 
-### *What does this all mean?*
+| Position | AVG Score | % of Volume Leaders | % Error |
+|---------|-----------|---------------------|---------|
+| QB-top15 | 20.469 | 100% | 7.33% |
+| TE-top15 | 9.129 | 73.33% | 17.52% |
+| RB-top60 | 9.630 | 88.33% | 4.15% |
+| WR-top60 | 10.138 | 88.33% | 10.85% |
 
-Given this information we can say that projection accuracy is most accurate among running backs. They give you the best face value, what you see is what you get. This helps us make the point that positional bias does exist across projections.
+Running backs stand out as the most predictable position group. High-volume RBs are projected accurately and exhibit the lowest proportional error. Tight ends show the weakest relationship between volume and performance, reinforcing their volatility.
 
-Tight ends as aforementioned are the worst projected group. They do not perform in line with their projections and as such under-project performance.
+## Interpretation
 
-# Part 4: Possible improvements
+These results provide evidence of **systematic positional bias** in fantasy football projections. Projections are most reliable for running backs, moderately reliable for quarterbacks and wide receivers, and least reliable for tight ends.
 
-The accuracy of the analysis would be enhanced further as more initial data analysis takes place. The following graph shows the distribution of tested points and the density of the points. This in turn lets us analyze whether or not the position group has extreme performers that skew our data.
+------------------------------------------------------------------------
 
-![](images/clipboard-766660118.png){width="258" height="167"}
+# Part 4: Trends, Pressure, and Visibility
 
-The only normal looking curve comes from the RB and WR groups who have extreme performers but not to a point where its hit or miss, rather these players are exceptions to the rule. Most notably the 2024 season had 2 RBs- Derrick Henry and Saquon Barkley- have what are considered some of the best seasons ever by a RB, so that must be taken with a grain of salt. We can also explain the skew in the WR data with Jamarr Chase's Triple Crown year.[^5] Overall the performance of fantasy sites is skewed around data and doesn't have truly reliable performance vs projections. 
+An exploratory extension of the analysis examines whether public attention—proxied by Google search trends—correlates with deviations from projections. The hypothesis is that heightened visibility may influence player performance through increased pressure or motivation.
 
-[^5]: The triple crown is when a receiver has the most receptions, yards, and TD's out of all the receivers in the league. This is very uncommon. 
+Results suggest weak and inconsistent relationships between search interest and projection error. While some high-profile players display increased volatility during periods of heightened attention, the overall effect is not strong enough to draw definitive conclusions. This suggests that projection inaccuracies are more likely driven by structural modeling limitations rather than behavioral responses to visibility.
+
+------------------------------------------------------------------------
+
+# Part 5: Possible Improvements and Limitations
+
+Further improvements to the analysis could incorporate additional modeling techniques. Density plots indicate that running back and wide receiver distributions are closer to normal, while quarterback and tight end distributions exhibit heavier tails. Extreme seasons—such as historic performances by Derrick Henry, Saquon Barkley, and Ja’Marr Chase—exert disproportionate influence on summary statistics.
+
+Future work could include:
+
+- Player-level random effects models  
+- Injury-adjusted projections  
+- Team context variables such as pace and implied totals  
+
+Despite these limitations, the results highlight an important insight: **fantasy football outcomes are not purely a function of managerial skill**. Structural biases in projection systems can meaningfully affect outcomes.
+
+------------------------------------------------------------------------
+
+# Conclusion
+
+Fantasy football is often described as a game of skill. This analysis demonstrates that while skill matters, **projection bias and positional volatility play a significant role** in determining outcomes. Tight end projections are systematically less reliable, while running back projections provide the greatest stability.
+
+For fantasy managers, this implies that losing a matchup—or even an entire league—may not always reflect poor decision-making. In many cases, the numbers simply were not on your side.
 

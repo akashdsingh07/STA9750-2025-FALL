@@ -69,39 +69,10 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
-<body class="nav-fixed fullcontent quarto-light">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -121,7 +92,30 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#part-1-introduction" id="toc-part-1-introduction" class="nav-link active" data-scroll-target="#part-1-introduction"><span class="header-section-number">1</span> Part 1: Introduction</a>
+  <ul class="collapse">
+  <li><a href="#overarching-question" id="toc-overarching-question" class="nav-link" data-scroll-target="#overarching-question"><span class="header-section-number">1.1</span> Overarching Question</a></li>
+  <li><a href="#specific-questions" id="toc-specific-questions" class="nav-link" data-scroll-target="#specific-questions"><span class="header-section-number">1.2</span> Specific Questions</a></li>
+  </ul></li>
+  <li><a href="#part-2-data" id="toc-part-2-data" class="nav-link" data-scroll-target="#part-2-data"><span class="header-section-number">2</span> Part 2: Data</a></li>
+  <li><a href="#part-3-analysis" id="toc-part-3-analysis" class="nav-link" data-scroll-target="#part-3-analysis"><span class="header-section-number">3</span> Part 3: Analysis</a>
+  <ul class="collapse">
+  <li><a href="#baseline-projection-accuracy" id="toc-baseline-projection-accuracy" class="nav-link" data-scroll-target="#baseline-projection-accuracy"><span class="header-section-number">3.1</span> Baseline Projection Accuracy</a></li>
+  <li><a href="#fantasy-relevant-subset" id="toc-fantasy-relevant-subset" class="nav-link" data-scroll-target="#fantasy-relevant-subset"><span class="header-section-number">3.2</span> Fantasy-Relevant Subset</a></li>
+  <li><a href="#volume-and-projection-error" id="toc-volume-and-projection-error" class="nav-link" data-scroll-target="#volume-and-projection-error"><span class="header-section-number">3.3</span> Volume and Projection Error</a></li>
+  <li><a href="#interpretation" id="toc-interpretation" class="nav-link" data-scroll-target="#interpretation"><span class="header-section-number">3.4</span> Interpretation</a></li>
+  </ul></li>
+  <li><a href="#part-4-trends-pressure-and-visibility" id="toc-part-4-trends-pressure-and-visibility" class="nav-link" data-scroll-target="#part-4-trends-pressure-and-visibility"><span class="header-section-number">4</span> Part 4: Trends, Pressure, and Visibility</a></li>
+  <li><a href="#part-5-possible-improvements-and-limitations" id="toc-part-5-possible-improvements-and-limitations" class="nav-link" data-scroll-target="#part-5-possible-improvements-and-limitations"><span class="header-section-number">5</span> Part 5: Possible Improvements and Limitations</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">6</span> Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -152,36 +146,48 @@ window.Quarto = {
 
 
 <hr>
-<section id="part-1-introduction" class="level1">
-<h1><strong>Part 1: Introduction</strong></h1>
-<p>Fantasy football has always been a part of sports culture. From odd last place punishments, to homemade trophies for league winners, fantasy football has always been a staple of avid sports fans. This is especially the case with Fantasy football which, in the US has the largest league. <a href="https://www.statista.com/topics/10895/fantasy-sports-in-the-us/#topicOverview">Estimates</a> have projected that <strong>~30 million Americans in 2022 alone</strong> played in fantasy football leagues. This number has definitely grown since, as <a href="https://espnpressroom.com/us/press-releases/2024/09/another-all-time-record-13-million-fans-playing-espn-fantasy-football-in-2024/#:~:text=Another%20All%2DTime%20Record:%2013,2024%20%2D%20ESPN%20Press%20Room%20U.S.">ESPN</a> has reported they have had over 13 million players alone in 2024, which is a record.</p>
-<p>All this to say, fantasy football has grown from a niche game, to a staple of american culture. With almost 1/10 people in america playing the game it has become more important to people to perform well. There is even <a href="https://www.prnewswire.com/news-releases/fantasy-sports-market-to-be-worth-56-36-billion-by-2030-grand-view-research-inc-301853997.html">some studies</a> that show the fantasy sports market to be worth <strong>$56.36 Billion by 2030</strong>. More than ever gambling has entered the everyday life of Americans. As shown below, US volume of betting on sports has <strong><em>grown from $1.5 billion in 2018 to $150 billion</em></strong>. Sports betting and fantasy leagues are more so than ever before about dollars and cents.</p>
+<section id="part-1-introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Part 1: Introduction</h1>
+<p>Fantasy football has long been embedded in sports culture in the United States. From humorous last-place punishments to handcrafted trophies for league champions, fantasy football has evolved from a casual pastime into a serious competitive activity. This cultural relevance is particularly pronounced in the United States, which hosts the largest fantasy football community in the world. According to recent estimates, approximately <strong>30 million Americans participated in fantasy football leagues in 2022 alone</strong>, a number that has continued to grow steadily. ESPN reported that in 2024, more than <strong>13 million users played fantasy football on ESPN platforms</strong>, marking an all-time record for the company.</p>
+<p>These statistics highlight a broader cultural shift. Fantasy football is no longer a niche activity reserved for die-hard sports fans. Instead, it has become a mainstream form of engagement with professional sports, cutting across age, income, and geographic boundaries. With nearly <strong>one in ten Americans</strong> participating, fantasy football now occupies a space similar to other major leisure industries.</p>
+<p>Beyond entertainment, fantasy sports have increasingly taken on economic importance. Industry forecasts project that the <strong>fantasy sports market will be worth approximately $56.36 billion by 2030</strong>, reflecting rapid growth driven by data availability, mobile technology, and integration with legalized sports betting. Since the Supreme Court’s 2018 decision to overturn PASPA, legal sports betting in the United States has expanded dramatically. Total annual sports betting volume has surged from <strong>$1.5 billion in 2018 to nearly $150 billion</strong>, fundamentally changing how fans interact with sports.</p>
 <iframe title="U.S. Sports Betting Annual Revenue Growth" src="https://rg.org/charts/States Yearly growth chart/----" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="300" data-external="1">
 </iframe>
-<section id="overarching-question" class="level3">
-<h3 class="anchored" data-anchor-id="overarching-question"><em>Overarching Question</em></h3>
-<p>Accuracy has never been more important when looking at which players to play a given week. Most of the time, projections are given by odds makers and fantasy sites, and are expected to be taken at face value. But <strong>how accurate are these projections in predicting actual performance</strong>? That is the Overarching question we aim to answer in this paper</p>
-<p>And to answer this question, quantitative proof was required to to really construct a meaningful conclusion. thus the following specific questions are what the research chose to answer.</p>
+<p>Fantasy football now exists at the intersection of entertainment, analytics, and gambling. While traditional fantasy leagues may not involve direct wagering, the financial incentives—league entry fees, prize pools, and reputational stakes—are very real. As a result, fantasy participants increasingly rely on <strong>weekly player projections</strong> to guide lineup decisions. These projections are presented by fantasy platforms and odds-makers as objective, data-driven estimates of expected performance. However, the reliability of these projections is rarely questioned using rigorous statistical analysis.</p>
+<section id="overarching-question" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="overarching-question"><span class="header-section-number">1.1</span> Overarching Question</h2>
+<p>Given the financial, emotional, and competitive stakes involved, accuracy in fantasy football projections has never been more important. Most fantasy participants assume that projections represent an unbiased and reliable estimate of expected player performance. This assumption motivates the central research question of this paper:</p>
+<p><strong>How accurate are fantasy football projections in predicting actual player performance?</strong></p>
+<p>More specifically, this paper examines whether systematic patterns in projection error exist that may disadvantage fantasy players in ways that are largely outside of their control.</p>
 </section>
-<section id="specific-questions" class="level3">
-<h3 class="anchored" data-anchor-id="specific-questions"><em>Specific Questions</em></h3>
+<section id="specific-questions" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="specific-questions"><span class="header-section-number">1.2</span> Specific Questions</h2>
+<p>To answer the overarching question, the analysis focuses on the following research questions:</p>
 <ol type="1">
-<li><p>Is there systematic bias when observing the different skill positions- <em>are certain positions more likely to out-perform/under-perform projections?</em></p></li>
-<li><p>Does player volume lead to accurate/inaccurate projections?</p></li>
+<li><p><strong>Is there systematic bias across skill positions?</strong><br>
+Are certain positions more likely to overperform or underperform projections?</p></li>
+<li><p><strong>Does player volume improve projection accuracy?</strong><br>
+Are high-usage players projected more accurately than lower-volume players?</p></li>
 </ol>
-<p>After establishing these questions, the only thing left to do was test out the hypothesis.</p>
+<hr>
 </section>
 </section>
-<section id="part-2-data" class="level1">
-<h1><strong>Part 2: Data</strong></h1>
-<p>The data used to implement the research conducted stemmed from 2 major sources. 1 such source being <code>nflreadr</code>, which is a package on R that houses all past player data from NFL seasons.</p>
-<p>Next to supplement this package the use of <a href="https://www.fantasypros.com">Fantasy Pros</a> was needed. This website aggregates fantasy data across 5 major fantasy platforms and provides historical weekly projections of such. The data was scraped and joined to create a final data set that showed projections and performance of players in the 2024 season.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>Lastly the package <code>gtrends</code> was used to analyze player trends by importing player search trends on google and normalizing across groups.</p>
-<p>In totality the final dataset conissted of 22 attributes ranging from yards accumulation to attempts and TD. All stats recorded vary by skill group but are applied to cover (rushing,passing,throwing).</p>
+<section id="part-2-data" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Part 2: Data</h1>
+<p>The analysis draws from multiple complementary data sources to capture both <strong>actual performance</strong> and <strong>expected performance</strong> for fantasy-relevant NFL players.</p>
+<p>The primary source of player performance data is the <code>nflreadr</code> package in R. This package provides comprehensive weekly and play-by-play player statistics for all NFL seasons, including yardage, touchdowns, receptions, attempts, and fantasy scoring outputs. The reliability and completeness of <code>nflreadr</code> make it well-suited for quantitative analysis.</p>
+<p>To measure expected performance, historical weekly fantasy projections were collected from <strong>FantasyPros</strong>, a widely used fantasy football analytics platform. FantasyPros aggregates projections from five major fantasy providers and presents a consensus estimate for each player-week. These projections reflect what the average fantasy manager is exposed to when making lineup decisions.</p>
+<p>The FantasyPros data were scraped and merged with <code>nflreadr</code> performance data to create a unified dataset covering the <strong>2024 NFL regular season</strong>. All fantasy points were calculated using a <strong>Half-PPR (Points Per Reception)</strong> scoring format, which reflects a common league structure and balances volume-based scoring with touchdown dependence.</p>
+<p>To explore potential behavioral effects, the analysis also incorporates <strong>Google search trend data</strong> using the <code>gtrends</code> package. Player search interest serves as a proxy for public attention and media pressure, allowing exploratory analysis of whether visibility correlates with deviations from projections.</p>
+<p>The final dataset consists of <strong>22 variables</strong>, including fantasy points, projected points, positional indicators, volume metrics (targets, carries, attempts), and trend-based features. While not all variables apply uniformly across positions, the dataset provides a comprehensive view of offensive fantasy production.</p>
+<hr>
 </section>
-<section id="part-3-analysis" class="level1">
-<h1><strong>Part 3: Analysis</strong></h1>
-<p>As a baseline to understand projection performance, we want to see performance vs actual. Analyzing the performance of players vs their projections we get the following statistics:</p>
+<section id="part-3-analysis" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Part 3: Analysis</h1>
+<section id="baseline-projection-accuracy" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="baseline-projection-accuracy"><span class="header-section-number">3.1</span> Baseline Projection Accuracy</h2>
+<p>As a baseline measure of projection performance, the difference between <strong>actual fantasy points and projected fantasy points</strong> was calculated on a weekly basis. Positive values indicate overperformance, while negative values indicate underperformance.</p>
+<p>The following table summarizes the distribution of these differences by position:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -198,54 +204,57 @@ window.Quarto = {
 <tr class="odd">
 <td>QB</td>
 <td>-19.64</td>
-<td>-4.000</td>
-<td>0.140</td>
+<td>-4.00</td>
+<td>0.14</td>
 <td>1.368</td>
-<td>5.780</td>
-<td>33.440</td>
+<td>5.78</td>
+<td>33.44</td>
 </tr>
 <tr class="even">
 <td>TE</td>
 <td>-10.70</td>
-<td>-1.500</td>
-<td>0.000</td>
-<td>0.7517</td>
-<td>2.250</td>
-<td>29.720</td>
+<td>-1.50</td>
+<td>0.00</td>
+<td>0.752</td>
+<td>2.25</td>
+<td>29.72</td>
 </tr>
 <tr class="odd">
 <td>RB</td>
 <td>-14.00</td>
-<td>-2.200</td>
-<td>0.000</td>
+<td>-2.20</td>
+<td>0.00</td>
 <td>1.130</td>
-<td>3.500</td>
-<td>37.200</td>
+<td>3.50</td>
+<td>37.20</td>
 </tr>
 <tr class="even">
 <td>WR</td>
 <td>-14.70</td>
-<td>-2.100</td>
-<td>0.000</td>
+<td>-2.10</td>
+<td>0.00</td>
 <td>1.224</td>
-<td>3.400</td>
-<td>33.400</td>
+<td>3.40</td>
+<td>33.40</td>
 </tr>
 </tbody>
 </table>
-<p>We see from this table that it seems on average projections are pretty accurate for most skill position groups.With QB being the most inaccurate on average and median, and TE being the most stable around its projections. The median shows great accuracy and is arguably a better measure of performance with this data, because of large outliers.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
-<p>This initially would point to a thought process that boom weeks are just a part of normal fluctuations, that eventually revert to the mean. However, it would be more accurate to look at a subset of players, as not all players in fantasy are treated equally. Taking the 15 best performers for 2024 in both QB and TE, and top 60 performers in RB and WR<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>, we get the following statistics.</p>
+<p>At first glance, projections appear reasonably accurate across positions. Median values near zero suggest that typical outcomes align closely with projections. However, means are consistently higher than medians, indicating right-skewed distributions driven by occasional extreme performances.</p>
+<p>Because fantasy outcomes are highly sensitive to outliers, the median provides a more reliable measure of central tendency in this context.</p>
+</section>
+<section id="fantasy-relevant-subset" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="fantasy-relevant-subset"><span class="header-section-number">3.2</span> Fantasy-Relevant Subset</h2>
+<p>Fantasy managers do not evaluate all NFL players equally. To better reflect realistic decision-making contexts, the analysis restricts attention to players who are typically rostered in standard 12-team leagues:</p>
+<ul>
+<li>Top 15 quarterbacks<br>
+</li>
+<li>Top 15 tight ends<br>
+</li>
+<li>Top 60 running backs<br>
+</li>
+<li>Top 60 wide receivers</li>
+</ul>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 15%">
-<col style="width: 12%">
-<col style="width: 13%">
-<col style="width: 12%">
-<col style="width: 10%">
-<col style="width: 13%">
-<col style="width: 10%">
-<col style="width: 12%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Position</th>
@@ -267,7 +276,7 @@ window.Quarto = {
 <td>2.568</td>
 <td>7.98</td>
 <td>33.44</td>
-<td>86.359</td>
+<td>86.36</td>
 </tr>
 <tr class="even">
 <td>TE-top15</td>
@@ -277,7 +286,7 @@ window.Quarto = {
 <td>1.799</td>
 <td>5.80</td>
 <td>21.20</td>
-<td>38.341</td>
+<td>38.34</td>
 </tr>
 <tr class="odd">
 <td>RB-top60</td>
@@ -287,7 +296,7 @@ window.Quarto = {
 <td>1.622</td>
 <td>5.30</td>
 <td>37.20</td>
-<td>51.651</td>
+<td>51.65</td>
 </tr>
 <tr class="even">
 <td>WR-top60</td>
@@ -297,19 +306,22 @@ window.Quarto = {
 <td>2.281</td>
 <td>6.60</td>
 <td>33.40</td>
-<td>62.380</td>
+<td>62.38</td>
 </tr>
 </tbody>
 </table>
-<p>Based on this we see a smaller variation in the median of the RB position relative to the other skill positions. Meaningful fantasy performers-top 60 players- in the RB position seem to project well. This supports projections of RBs being more stable. This table also shows that Tight ends are the most volatile when looking at median. This is worrisome as Tight ends also have the smallest variance amongst the groups.</p>
-<p>Not only this, but when cross referencing volume of tight ends and their appearance in the top 15 fantasy scorers, it is clear that volume is not as consistent with production for this position group.</p>
+<p>Running backs exhibit the lowest median projection error, indicating relatively stable and predictable production. Tight ends, by contrast, show greater inconsistency relative to their projections despite having lower overall variance.</p>
+</section>
+<section id="volume-and-projection-error" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="volume-and-projection-error"><span class="header-section-number">3.3</span> Volume and Projection Error</h2>
+<p>To assess whether opportunity volume improves projection accuracy, high-volume players were compared against top fantasy scorers:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Position</th>
 <th>AVG Score</th>
-<th>% of vol leaders</th>
-<th>% error<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></th>
+<th>% of Volume Leaders</th>
+<th>% Error</th>
 </tr>
 </thead>
 <tbody>
@@ -321,15 +333,15 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td>TE-top15</td>
-<td>9.1290</td>
+<td>9.129</td>
 <td>73.33%</td>
 <td>17.52%</td>
 </tr>
 <tr class="odd">
 <td>RB-top60</td>
-<td>9.6300</td>
+<td>9.630</td>
 <td>88.33%</td>
-<td>4.153%</td>
+<td>4.15%</td>
 </tr>
 <tr class="even">
 <td>WR-top60</td>
@@ -339,32 +351,43 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<section id="what-does-this-all-mean" class="level3">
-<h3 class="anchored" data-anchor-id="what-does-this-all-mean"><em>What does this all mean?</em></h3>
-<p>Given this information we can say that projection accuracy is most accurate among running backs. They give you the best face value, what you see is what you get. This helps us make the point that positional bias does exist across projections.</p>
-<p>Tight ends as aforementioned are the worst projected group. They do not perform in line with their projections and as such under-project performance.</p>
+<p>Running backs stand out as the most predictable position group. High-volume RBs are projected accurately and exhibit the lowest proportional error. Tight ends show the weakest relationship between volume and performance, reinforcing their volatility.</p>
+</section>
+<section id="interpretation" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="interpretation"><span class="header-section-number">3.4</span> Interpretation</h2>
+<p>These results provide evidence of <strong>systematic positional bias</strong> in fantasy football projections. Projections are most reliable for running backs, moderately reliable for quarterbacks and wide receivers, and least reliable for tight ends.</p>
+<hr>
 </section>
 </section>
-<section id="part-4-possible-improvements" class="level1">
-<h1>Part 4: Possible improvements</h1>
-<p>The accuracy of the analysis would be enhanced further as more initial data analysis takes place. The following graph shows the distribution of tested points and the density of the points. This in turn lets us analyze whether or not the position group has extreme performers that skew our data.</p>
-<p><img src="images/clipboard-766660118.png" width="258" height="167"></p>
-<p>The only normal looking curve comes from the RB and WR groups who have extreme performers but not to a point where its hit or miss, rather these players are exceptions to the rule. Most notably the 2024 season had 2 RBs- Derrick Henry and Saquon Barkley- have what are considered some of the best seasons ever by a RB, so that must be taken with a grain of salt. We can also explain the skew in the WR data with Jamarr Chase’s Triple Crown year.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> Overall the performance of fantasy sites is skewed around data and doesn’t have truly reliable performance vs projections.</p>
+<section id="part-4-trends-pressure-and-visibility" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Part 4: Trends, Pressure, and Visibility</h1>
+<p>An exploratory extension of the analysis examines whether public attention—proxied by Google search trends—correlates with deviations from projections. The hypothesis is that heightened visibility may influence player performance through increased pressure or motivation.</p>
+<p>Results suggest weak and inconsistent relationships between search interest and projection error. While some high-profile players display increased volatility during periods of heightened attention, the overall effect is not strong enough to draw definitive conclusions. This suggests that projection inaccuracies are more likely driven by structural modeling limitations rather than behavioral responses to visibility.</p>
+<hr>
+</section>
+<section id="part-5-possible-improvements-and-limitations" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Part 5: Possible Improvements and Limitations</h1>
+<p>Further improvements to the analysis could incorporate additional modeling techniques. Density plots indicate that running back and wide receiver distributions are closer to normal, while quarterback and tight end distributions exhibit heavier tails. Extreme seasons—such as historic performances by Derrick Henry, Saquon Barkley, and Ja’Marr Chase—exert disproportionate influence on summary statistics.</p>
+<p>Future work could include:</p>
+<ul>
+<li>Player-level random effects models<br>
+</li>
+<li>Injury-adjusted projections<br>
+</li>
+<li>Team context variables such as pace and implied totals</li>
+</ul>
+<p>Despite these limitations, the results highlight an important insight: <strong>fantasy football outcomes are not purely a function of managerial skill</strong>. Structural biases in projection systems can meaningfully affect outcomes.</p>
+<hr>
+</section>
+<section id="conclusion" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Conclusion</h1>
+<p>Fantasy football is often described as a game of skill. This analysis demonstrates that while skill matters, <strong>projection bias and positional volatility play a significant role</strong> in determining outcomes. Tight end projections are systematically less reliable, while running back projections provide the greatest stability.</p>
+<p>For fantasy managers, this implies that losing a matchup—or even an entire league—may not always reflect poor decision-making. In many cases, the numbers simply were not on your side.</p>
 
 
 </section>
 
-
-<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
-
-<ol>
-<li id="fn1"><p>Half PPR-points per reception, was used to analyze data.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>Negative values represent an under performance, while positive values represent an over performance, relative to weekly projection.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>Tight ends and Quarter backs only have 1 plot on a fantasy team, and assuming a 12 team lague we look for the top 15 players, Running backs and wide receivers have 2 lots each and a flex spot, so we take 2.5<em>12</em>2 which gives us 60 spots.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p><span class="math inline">\(\% error= \frac {\text{median difference}}{\text{AVG Score}}\)</span><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>The triple crown is when a receiver has the most receptions, yards, and TD’s out of all the receivers in the league. This is very uncommon.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
