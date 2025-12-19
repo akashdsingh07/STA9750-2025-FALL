@@ -69,6 +69,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -122,6 +151,7 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<hr>
 <section id="part-1-introduction" class="level1">
 <h1><strong>Part 1: Introduction</strong></h1>
 <p>Fantasy football has always been a part of sports culture. From odd last place punishments, to homemade trophies for league winners, fantasy football has always been a staple of avid sports fans. This is especially the case with Fantasy football which, in the US has the largest league. <a href="https://www.statista.com/topics/10895/fantasy-sports-in-the-us/#topicOverview">Estimates</a> have projected that <strong>~30 million Americans in 2022 alone</strong> played in fantasy football leagues. This number has definitely grown since, as <a href="https://espnpressroom.com/us/press-releases/2024/09/another-all-time-record-13-million-fans-playing-espn-fantasy-football-in-2024/#:~:text=Another%20All%2DTime%20Record:%2013,2024%20%2D%20ESPN%20Press%20Room%20U.S.">ESPN</a> has reported they have had over 13 million players alone in 2024, which is a record.</p>
@@ -138,7 +168,6 @@ ul.task-list li input[type="checkbox"] {
 <ol type="1">
 <li><p>Is there systematic bias when observing the different skill positions- <em>are certain positions more likely to out-perform/under-perform projections?</em></p></li>
 <li><p>Does player volume lead to accurate/inaccurate projections?</p></li>
-<li><p>Does player news effect player performance?</p></li>
 </ol>
 <p>After establishing these questions, the only thing left to do was test out the hypothesis.</p>
 </section>
@@ -152,7 +181,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="part-3-analysis" class="level1">
 <h1><strong>Part 3: Analysis</strong></h1>
-<p>As a baseline to analyze player performance,an extra variable to measure performance of player vs projection was created.When analyzing the performance of players vs their projections we get the following statistics:</p>
+<p>As a baseline to understand projection performance, we want to see performance vs actual. Analyzing the performance of players vs their projections we get the following statistics:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -272,7 +301,55 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 </tbody>
 </table>
-<p>Based on this we see a smaller variation in the median of the RB position relative to the other skill positions. Meaningful fantasy performers in the RB position seem to project well. This supports the projections of</p>
+<p>Based on this we see a smaller variation in the median of the RB position relative to the other skill positions. Meaningful fantasy performers-top 60 players- in the RB position seem to project well. This supports projections of RBs being more stable. This table also shows that Tight ends are the most volatile when looking at median. This is worrisome as Tight ends also have the smallest variance amongst the groups.</p>
+<p>Not only this, but when cross referencing volume of tight ends and their appearance in the top 15 fantasy scorers, it is clear that volume is not as consistent with production for this position group.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Position</th>
+<th>AVG Score</th>
+<th>% of vol leaders</th>
+<th>% error<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>QB-top15</td>
+<td>20.469</td>
+<td>100%</td>
+<td>7.33%</td>
+</tr>
+<tr class="even">
+<td>TE-top15</td>
+<td>9.1290</td>
+<td>73.33%</td>
+<td>17.52%</td>
+</tr>
+<tr class="odd">
+<td>RB-top60</td>
+<td>9.6300</td>
+<td>88.33%</td>
+<td>4.153%</td>
+</tr>
+<tr class="even">
+<td>WR-top60</td>
+<td>10.138</td>
+<td>88.33%</td>
+<td>10.85%</td>
+</tr>
+</tbody>
+</table>
+<section id="what-does-this-all-mean" class="level3">
+<h3 class="anchored" data-anchor-id="what-does-this-all-mean"><em>What does this all mean?</em></h3>
+<p>Given this information we can say that projection accuracy is most accurate among running backs. They give you the best face value, what you see is what you get. This helps us make the point that positional bias does exist across projections.</p>
+<p>Tight ends as aforementioned are the worst projected group. They do not perform in line with their projections and as such under-project performance.</p>
+</section>
+</section>
+<section id="part-4-possible-improvements" class="level1">
+<h1>Part 4: Possible improvements</h1>
+<p>The accuracy of the analysis would be enhanced further as more initial data analysis takes place. The following graph shows the distribution of tested points and the density of the points. This in turn lets us analyze whether or not the position group has extreme performers that skew our data.</p>
+<p><img src="images/clipboard-766660118.png" width="258" height="167"></p>
+<p>The only normal looking curve comes from the RB and WR groups who have extreme performers but not to a point where its hit or miss, rather these players are exceptions to the rule. Most notably the 2024 season had 2 RBs- Derrick Henry and Saquon Barkley- have what are considered some of the best seasons ever by a RB, so that must be taken with a grain of salt. We can also explain the skew in the WR data with Jamarr Chase’s Triple Crown year.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> Overall the performance of fantasy sites is skewed around data and doesn’t have truly reliable performance vs projections.</p>
 
 
 </section>
@@ -284,6 +361,8 @@ ul.task-list li input[type="checkbox"] {
 <li id="fn1"><p>Half PPR-points per reception, was used to analyze data.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>Negative values represent an under performance, while positive values represent an over performance, relative to weekly projection.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>Tight ends and Quarter backs only have 1 plot on a fantasy team, and assuming a 12 team lague we look for the top 15 players, Running backs and wide receivers have 2 lots each and a flex spot, so we take 2.5<em>12</em>2 which gives us 60 spots.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><span class="math inline">\(\% error= \frac {\text{median difference}}{\text{AVG Score}}\)</span><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>The triple crown is when a receiver has the most receptions, yards, and TD’s out of all the receivers in the league. This is very uncommon.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
