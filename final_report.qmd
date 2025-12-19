@@ -151,3 +151,23 @@ Fantasy football is often described as a game of skill. This analysis demonstrat
 
 For fantasy managers, this implies that losing a matchup—or even an entire league—may not always reflect poor decision-making. In many cases, the numbers simply were not on your side.
 
+------------------------------------------------------------------------
+
+# Part 7: Practical Implications for Fantasy Strategy
+
+While the primary objective of this analysis is to evaluate the accuracy of fantasy football projections, the results also have meaningful implications for how fantasy managers should approach both draft strategy and weekly lineup decisions. If projection accuracy varies systematically by position, then rational fantasy decision-making must account not only for expected value, but also for risk and uncertainty.
+
+One immediate implication concerns **draft capital allocation**. Running backs emerge as the most predictable position group, with relatively low median projection error and strong alignment between volume and production. From a risk-adjusted perspective, this suggests that early-round investments in running backs provide more reliable returns relative to other positions. While elite wide receivers and quarterbacks may offer comparable upside, their higher variance increases the probability of large deviations from projected outcomes in any given week.
+
+Tight ends, by contrast, represent a structurally high-risk position. Even among top-performing tight ends, projections fail to reliably capture realized production. This volatility helps explain why fantasy managers often struggle to find consistent output at the position despite following consensus projections. From a strategic standpoint, this supports approaches such as “late-round tight end” drafting or streaming tight ends on a weekly basis, rather than committing significant draft capital to a single projected outcome.
+
+Weekly lineup decisions are also affected by positional volatility. In head-to-head fantasy formats, managers face a repeated binary decision problem: maximize the probability of winning each week rather than maximizing long-run expected points. In such settings, variance plays a critical role. A player with a slightly lower projection but lower variance may be preferable to a higher-projected player with a wider distribution of outcomes, particularly when a manager is favored in a matchup.
+
+This insight is especially relevant when evaluating flex positions. Because running backs demonstrate both stable volume and lower relative error, they may offer better risk-adjusted value in flex spots compared to wide receivers or tight ends with similar projected scores. Projection systems typically rank players by expected points alone, but this analysis suggests that incorporating volatility measures could lead to more optimal decisions.
+
+Another implication relates to **managerial perception of skill and luck**. Fantasy football outcomes are often retrospectively attributed to good or bad decision-making. However, the presence of systematic projection bias and positional volatility implies that outcomes may be heavily influenced by factors outside a manager’s control. This distinction is important when evaluating performance over short horizons, such as a single fantasy season.
+
+Finally, these results have implications for the design of fantasy platforms themselves. Projection systems could be improved by explicitly communicating uncertainty, such as providing prediction intervals rather than point estimates. Doing so would allow fantasy managers to better understand the range of plausible outcomes and make decisions aligned with their risk preferences.
+
+Overall, the practical takeaway is that fantasy football is not purely a game of maximizing projected points. It is a game of managing uncertainty. Recognizing positional differences in projection accuracy allows managers to make more informed, risk-aware decisions and provides a more nuanced understanding of why outcomes may deviate from expectations.
+
